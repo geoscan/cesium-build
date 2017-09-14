@@ -15063,116 +15063,6 @@ define('ThirdParty/when',[],function () {
 	// Boilerplate for AMD, Node, and browser global
 );
 
-define('Core/oneTimeWarning',[
-        './defaultValue',
-        './defined',
-        './DeveloperError'
-    ], function(
-        defaultValue,
-        defined,
-        DeveloperError) {
-    'use strict';
-
-    var warnings = {};
-
-    /**
-     * Logs a one time message to the console.  Use this function instead of
-     * <code>console.log</code> directly since this does not log duplicate messages
-     * unless it is called from multiple workers.
-     *
-     * @exports oneTimeWarning
-     *
-     * @param {String} identifier The unique identifier for this warning.
-     * @param {String} [message=identifier] The message to log to the console.
-     *
-     * @example
-     * for(var i=0;i<foo.length;++i) {
-     *    if (!defined(foo[i].bar)) {
-     *       // Something that can be recovered from but may happen a lot
-     *       oneTimeWarning('foo.bar undefined', 'foo.bar is undefined. Setting to 0.');
-     *       foo[i].bar = 0;
-     *       // ...
-     *    }
-     * }
-     *
-     * @private
-     */
-    function oneTimeWarning(identifier, message) {
-                if (!defined(identifier)) {
-            throw new DeveloperError('identifier is required.');
-        }
-        
-        if (!defined(warnings[identifier])) {
-            warnings[identifier] = true;
-            console.warn(defaultValue(message, identifier));
-        }
-    }
-
-    oneTimeWarning.geometryOutlines = 'Entity geometry outlines are unsupported on terrain. Outlines will be disabled. To enable outlines, disable geometry terrain clamping by explicitly setting height to 0.';
-
-    return oneTimeWarning;
-});
-
-define('Core/deprecationWarning',[
-        './defined',
-        './DeveloperError',
-        './oneTimeWarning'
-    ], function(
-        defined,
-        DeveloperError,
-        oneTimeWarning) {
-    'use strict';
-
-    /**
-     * Logs a deprecation message to the console.  Use this function instead of
-     * <code>console.log</code> directly since this does not log duplicate messages
-     * unless it is called from multiple workers.
-     *
-     * @exports deprecationWarning
-     *
-     * @param {String} identifier The unique identifier for this deprecated API.
-     * @param {String} message The message to log to the console.
-     *
-     * @example
-     * // Deprecated function or class
-     * function Foo() {
-     *    deprecationWarning('Foo', 'Foo was deprecated in Cesium 1.01.  It will be removed in 1.03.  Use newFoo instead.');
-     *    // ...
-     * }
-     *
-     * // Deprecated function
-     * Bar.prototype.func = function() {
-     *    deprecationWarning('Bar.func', 'Bar.func() was deprecated in Cesium 1.01.  It will be removed in 1.03.  Use Bar.newFunc() instead.');
-     *    // ...
-     * };
-     *
-     * // Deprecated property
-     * defineProperties(Bar.prototype, {
-     *     prop : {
-     *         get : function() {
-     *             deprecationWarning('Bar.prop', 'Bar.prop was deprecated in Cesium 1.01.  It will be removed in 1.03.  Use Bar.newProp instead.');
-     *             // ...
-     *         },
-     *         set : function(value) {
-     *             deprecationWarning('Bar.prop', 'Bar.prop was deprecated in Cesium 1.01.  It will be removed in 1.03.  Use Bar.newProp instead.');
-     *             // ...
-     *         }
-     *     }
-     * });
-     *
-     * @private
-     */
-    function deprecationWarning(identifier, message) {
-                if (!defined(identifier) || !defined(message)) {
-            throw new DeveloperError('identifier and message are required.');
-        }
-        
-        oneTimeWarning(identifier, message);
-    }
-
-    return deprecationWarning;
-});
-
 define('Core/binarySearch',[
         './Check',
         './defined'
@@ -18444,7 +18334,6 @@ define('Core/loadWithXhr',[
         './Check',
         './defaultValue',
         './defined',
-        './deprecationWarning',
         './DeveloperError',
         './Request',
         './RequestErrorEvent',
@@ -18456,7 +18345,6 @@ define('Core/loadWithXhr',[
         Check,
         defaultValue,
         defined,
-        deprecationWarning,
         DeveloperError,
         Request,
         RequestErrorEvent,
@@ -18509,19 +18397,6 @@ define('Core/loadWithXhr',[
         
         var url = options.url;
 
-        if (typeof url !== 'string') {
-            // Returning a promise here is okay because it is unlikely that anyone using the deprecated functionality is also
-            // providing a Request object marked as throttled.
-            deprecationWarning('url promise', 'options.url as a Promise is deprecated and will be removed in Cesium 1.37');
-            return url.then(function(url) {
-                return makeRequest(options, url);
-            });
-        }
-
-        return makeRequest(options);
-    }
-
-    function makeRequest(options, url) {
         var responseType = options.responseType;
         var method = defaultValue(options.method, 'GET');
         var data = options.data;
@@ -20438,7 +20313,6 @@ define('Core/Quaternion',[
         './Check',
         './defaultValue',
         './defined',
-        './deprecationWarning',
         './FeatureDetection',
         './freezeObject',
         './HeadingPitchRoll',
@@ -20449,7 +20323,6 @@ define('Core/Quaternion',[
         Check,
         defaultValue,
         defined,
-        deprecationWarning,
         FeatureDetection,
         freezeObject,
         HeadingPitchRoll,
@@ -20617,26 +20490,13 @@ define('Core/Quaternion',[
      * @param {Quaternion} [result] The object onto which to store the result.
      * @returns {Quaternion} The modified result parameter or a new Quaternion instance if none was provided.
      */
-    Quaternion.fromHeadingPitchRoll = function(headingOrHeadingPitchRoll, pitchOrResult, roll, result) {
-                if (headingOrHeadingPitchRoll instanceof HeadingPitchRoll) {
-            Check.typeOf.object('headingPitchRoll', headingOrHeadingPitchRoll);
-        } else {
-            Check.typeOf.number('heading', headingOrHeadingPitchRoll);
-            Check.typeOf.number('pitch', pitchOrResult);
-            Check.typeOf.number('roll', roll);
-        }
-                var hpr;
-        if (headingOrHeadingPitchRoll instanceof HeadingPitchRoll) {
-            hpr = headingOrHeadingPitchRoll;
-            result = pitchOrResult;
-        } else {
-            deprecationWarning('Quaternion.fromHeadingPitchRoll(heading, pitch, roll,result)', 'The method was deprecated in Cesium 1.32 and will be removed in version 1.33. ' + 'Use Quaternion.fromHeadingPitchRoll(hpr,result) where hpr is a HeadingPitchRoll');
-            hpr = new HeadingPitchRoll(headingOrHeadingPitchRoll, pitchOrResult, roll);
-        }
-        scratchRollQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_X, hpr.roll, scratchHPRQuaternion);
-        scratchPitchQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_Y, -hpr.pitch, result);
+    Quaternion.fromHeadingPitchRoll = function(headingPitchRoll, result) {
+                Check.typeOf.object('headingPitchRoll', headingPitchRoll);
+        
+        scratchRollQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_X, headingPitchRoll.roll, scratchHPRQuaternion);
+        scratchPitchQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_Y, -headingPitchRoll.pitch, result);
         result = Quaternion.multiply(scratchPitchQuaternion, scratchRollQuaternion, scratchPitchQuaternion);
-        scratchHeadingQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_Z, -hpr.heading, scratchHPRQuaternion);
+        scratchHeadingQuaternion = Quaternion.fromAxisAngle(Cartesian3.UNIT_Z, -headingPitchRoll.heading, scratchHPRQuaternion);
         return Quaternion.multiply(scratchHeadingQuaternion, result, result);
     };
 
@@ -21441,7 +21301,6 @@ define('Core/Transforms',[
         './Check',
         './defaultValue',
         './defined',
-        './deprecationWarning',
         './DeveloperError',
         './EarthOrientationParameters',
         './EarthOrientationParametersSample',
@@ -21463,7 +21322,6 @@ define('Core/Transforms',[
         Check,
         defaultValue,
         defined,
-        deprecationWarning,
         DeveloperError,
         EarthOrientationParameters,
         EarthOrientationParametersSample,
@@ -21749,7 +21607,7 @@ define('Core/Transforms',[
      * @param {Cartesian3} origin The center point of the local reference frame.
      * @param {HeadingPitchRoll} headingPitchRoll The heading, pitch, and roll.
      * @param {Ellipsoid} [ellipsoid=Ellipsoid.WGS84] The ellipsoid whose fixed frame is used in the transformation.
-     * @param {Transforms~LocalFrameToFixedFrame} [fixedFrameTransformOrResult=Transforms.eastNorthUpToFixedFrame] A 4x4 transformation
+     * @param {Transforms~LocalFrameToFixedFrame} [fixedFrameTransform=Transforms.eastNorthUpToFixedFrame] A 4x4 transformation
      *  matrix from a reference frame to the provided ellipsoid's fixed reference frame
      * @param {Matrix4} [result] The object onto which to store the result.
      * @returns {Matrix4} The modified result parameter or a new Matrix4 instance if none was provided.
@@ -21763,19 +21621,13 @@ define('Core/Transforms',[
      * var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
      * var transform = Cesium.Transforms.headingPitchRollToFixedFrame(center, hpr);
      */
-    Transforms.headingPitchRollToFixedFrame = function(origin, headingPitchRoll, ellipsoid, fixedFrameTransformOrResult, result) {
+    Transforms.headingPitchRollToFixedFrame = function(origin, headingPitchRoll, ellipsoid, fixedFrameTransform, result) {
                 Check.typeOf.object( 'HeadingPitchRoll', headingPitchRoll);
         
-        // checks for required parameters happen in the called functions
-        if(fixedFrameTransformOrResult instanceof Matrix4){
-            result = fixedFrameTransformOrResult;
-            fixedFrameTransformOrResult = undefined;
-            deprecationWarning('Transforms.headingPitchRollToFixedFrame(origin, headingPitchRoll, ellipsoid, result)', 'The method was deprecated in Cesium 1.31 and will be removed in version 1.33. Transforms.headingPitchRollToFixedFrame(origin, headingPitchRoll, ellipsoid, fixedFrameTransform, result) where fixedFrameTransform is a a 4x4 transformation matrix (see Transforms.localFrameToFixedFrameGenerator)');
-        }
-        fixedFrameTransformOrResult = defaultValue(fixedFrameTransformOrResult,Transforms.eastNorthUpToFixedFrame);
+        fixedFrameTransform = defaultValue(fixedFrameTransform, Transforms.eastNorthUpToFixedFrame);
         var hprQuaternion = Quaternion.fromHeadingPitchRoll(headingPitchRoll, scratchHPRQuaternion);
         var hprMatrix = Matrix4.fromTranslationQuaternionRotationScale(Cartesian3.ZERO, hprQuaternion, scratchScale, scratchHPRMatrix4);
-        result = fixedFrameTransformOrResult(origin, ellipsoid, result);
+        result = fixedFrameTransform(origin, ellipsoid, result);
         return Matrix4.multiply(result, hprMatrix, result);
     };
 
@@ -21791,7 +21643,7 @@ define('Core/Transforms',[
      * @param {Cartesian3} origin The center point of the local reference frame.
      * @param {HeadingPitchRoll} headingPitchRoll The heading, pitch, and roll.
      * @param {Ellipsoid} [ellipsoid=Ellipsoid.WGS84] The ellipsoid whose fixed frame is used in the transformation.
-     * @param {Transforms~LocalFrameToFixedFrame} [fixedFrameTransformOrResult=Transforms.eastNorthUpToFixedFrame] A 4x4 transformation
+     * @param {Transforms~LocalFrameToFixedFrame} [fixedFrameTransform=Transforms.eastNorthUpToFixedFrame] A 4x4 transformation
      *  matrix from a reference frame to the provided ellipsoid's fixed reference frame
      * @param {Quaternion} [result] The object onto which to store the result.
      * @returns {Quaternion} The modified result parameter or a new Quaternion instance if none was provided.
@@ -21805,14 +21657,10 @@ define('Core/Transforms',[
      * var hpr = new HeadingPitchRoll(heading, pitch, roll);
      * var quaternion = Cesium.Transforms.headingPitchRollQuaternion(center, hpr);
      */
-    Transforms.headingPitchRollQuaternion = function(origin, headingPitchRoll, ellipsoid, fixedFrameTransformOrResult, result) {
+    Transforms.headingPitchRollQuaternion = function(origin, headingPitchRoll, ellipsoid, fixedFrameTransform, result) {
                 Check.typeOf.object( 'HeadingPitchRoll', headingPitchRoll);
-                if (fixedFrameTransformOrResult instanceof Quaternion) {
-            result = fixedFrameTransformOrResult;
-            fixedFrameTransformOrResult = undefined;
-            deprecationWarning('Transforms.headingPitchRollQuaternion(origin, headingPitchRoll, ellipsoid, result)', 'The method was deprecated in Cesium 1.31 and will be removed in version 1.33. Transforms.headingPitchRollQuaternion(origin, headingPitchRoll, ellipsoid, fixedFrameTransform, result) where fixedFrameTransform is a a 4x4 transformation matrix (see Transforms.localFrameToFixedFrameGenerator)');
-        }
-        var transform = Transforms.headingPitchRollToFixedFrame(origin, headingPitchRoll, ellipsoid,fixedFrameTransformOrResult, scratchENUMatrix4);
+        
+        var transform = Transforms.headingPitchRollToFixedFrame(origin, headingPitchRoll, ellipsoid, fixedFrameTransform, scratchENUMatrix4);
         var rotation = Matrix4.getRotation(transform, scratchHPRMatrix3);
         return Quaternion.fromRotationMatrix(rotation, result);
     };

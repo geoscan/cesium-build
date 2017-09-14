@@ -13606,7 +13606,7 @@ define('Core/VertexFormat',[
         array[startingIndex++] = value.st ? 1.0 : 0.0;
         array[startingIndex++] = value.tangent ? 1.0 : 0.0;
         array[startingIndex++] = value.bitangent ? 1.0 : 0.0;
-        array[startingIndex++] = value.color ? 1.0 : 0.0;
+        array[startingIndex] = value.color ? 1.0 : 0.0;
 
         return array;
     };
@@ -13635,7 +13635,7 @@ define('Core/VertexFormat',[
         result.st        = array[startingIndex++] === 1.0;
         result.tangent   = array[startingIndex++] === 1.0;
         result.bitangent = array[startingIndex++] === 1.0;
-        result.color     = array[startingIndex++] === 1.0;
+        result.color     = array[startingIndex] === 1.0;
         return result;
     };
 
