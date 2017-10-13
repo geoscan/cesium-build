@@ -2521,6 +2521,10 @@ define('Shaders/Builtin/Functions/latitudeToWebMercatorFraction', function() {
     return Cesium['latitudeToWebMercatorFraction'];
 });
 
+define('Shaders/Builtin/Functions/logDepth', function() {
+    return Cesium['logDepth'];
+});
+
 define('Shaders/Builtin/Functions/luminance', function() {
     return Cesium['luminance'];
 });

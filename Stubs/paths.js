@@ -631,6 +631,7 @@ define(function() {
         'Shaders/Builtin/Functions/isEmpty' : '../Stubs/Cesium',
         'Shaders/Builtin/Functions/isFull' : '../Stubs/Cesium',
         'Shaders/Builtin/Functions/latitudeToWebMercatorFraction' : '../Stubs/Cesium',
+        'Shaders/Builtin/Functions/logDepth' : '../Stubs/Cesium',
         'Shaders/Builtin/Functions/luminance' : '../Stubs/Cesium',
         'Shaders/Builtin/Functions/metersPerPixel' : '../Stubs/Cesium',
         'Shaders/Builtin/Functions/modelToWindowCoordinates' : '../Stubs/Cesium',
