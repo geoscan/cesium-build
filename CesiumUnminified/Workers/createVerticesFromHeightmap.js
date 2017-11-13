@@ -17775,8 +17775,14 @@ define('Core/loadWithXhr',[
             xhr.responseType = responseType;
         }
 
+        // While non-standard, file protocol always returns a status of 0 on success
+        var localFile = false;
+        if (typeof url === 'string') {
+            localFile = url.indexOf('file://') === 0;
+        }
+
         xhr.onload = function() {
-            if (xhr.status < 200 || xhr.status >= 300) {
+            if ((xhr.status < 200 || xhr.status >= 300) && !(localFile && xhr.status === 0)) {
                 deferred.reject(new RequestErrorEvent(xhr.status, xhr.response, xhr.getAllResponseHeaders()));
                 return;
             }
@@ -22023,8 +22029,8 @@ define('Core/OrientedBoundingBox',[
                 if (!defined(rectangle)) {
             throw new DeveloperError('rectangle is required');
         }
-        if (rectangle.width < 0.0 || rectangle.width > CesiumMath.PI) {
-            throw new DeveloperError('Rectangle width must be between 0 and pi');
+        if (rectangle.width < 0.0 || rectangle.width > CesiumMath.TWO_PI) {
+            throw new DeveloperError('Rectangle width must be between 0 and 2*pi');
         }
         if (rectangle.height < 0.0 || rectangle.height > CesiumMath.PI) {
             throw new DeveloperError('Rectangle height must be between 0 and pi');
@@ -24489,6 +24495,11 @@ define('Core/HeightmapTessellator',[
 
         var granularityX = rectangleWidth / (width - 1);
         var granularityY = rectangleHeight / (height - 1);
+
+		if (!isGeographic) {
+            rectangleWidth *= oneOverGlobeSemimajorAxis;
+            rectangleHeight *= oneOverGlobeSemimajorAxis;
+        }
 
         var radiiSquared = ellipsoid.radiiSquared;
         var radiiSquaredX = radiiSquared.x;
