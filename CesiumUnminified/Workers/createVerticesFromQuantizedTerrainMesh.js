@@ -2717,6 +2717,22 @@ define('Core/Cartesian3',[
     };
 
     /**
+     * Projects vector a onto vector b
+     * @param {Cartesian3} a The vector that needs projecting
+     * @param {Cartesian3} b The vector to project onto
+     * @param {Cartesian3} result The result cartesian
+     * @returns {Cartesian3} The modified result parameter
+     */
+    Cartesian3.projectVector = function(a, b, result) {
+                Check.defined('a', a);
+        Check.defined('b', b);
+        Check.defined('result', result);
+        
+        var scalar = Cartesian3.dot(a, b) / Cartesian3.dot(b, b);
+        return Cartesian3.multiplyByScalar(b, scalar, result);
+    };
+
+    /**
      * Compares the provided Cartesians componentwise and returns
      * <code>true</code> if they are equal, <code>false</code> otherwise.
      *
@@ -3076,12 +3092,14 @@ define('Core/AttributeCompression',[
         './Cartesian2',
         './Cartesian3',
         './Check',
+        './defined',
         './DeveloperError',
         './Math'
     ], function(
         Cartesian2,
         Cartesian3,
         Check,
+        defined,
         DeveloperError,
         CesiumMath) {
     'use strict';
@@ -3331,6 +3349,47 @@ define('Core/AttributeCompression',[
         result.x = xZeroTo4095 / 4095.0;
         result.y = (compressed - xZeroTo4095 * 4096) / 4095;
         return result;
+    };
+
+    function zigZagDecode(value) {
+        return (value >> 1) ^ (-(value & 1));
+    }
+
+    /**
+     * Decodes delta and ZigZag encoded vertices. This modifies the buffers in place.
+     *
+     * @param {Uint16Array} uBuffer The buffer view of u values.
+     * @param {Uint16Array} vBuffer The buffer view of v values.
+     * @param {Uint16Array} [heightBuffer] The buffer view of height values.
+     *
+     * @see {@link http://cesiumjs.org/data-and-assets/terrain/formats/quantized-mesh-1.0.html|quantized-mesh-1.0 terrain format}
+     */
+    AttributeCompression.zigZagDeltaDecode = function(uBuffer, vBuffer, heightBuffer) {
+                Check.defined('uBuffer', uBuffer);
+        Check.defined('vBuffer', vBuffer);
+        Check.typeOf.number.equals('uBuffer.length', 'vBuffer.length', uBuffer.length, vBuffer.length);
+        if (defined(heightBuffer)) {
+            Check.typeOf.number.equals('uBuffer.length', 'heightBuffer.length', uBuffer.length, heightBuffer.length);
+        }
+        
+        var count = uBuffer.length;
+
+        var u = 0;
+        var v = 0;
+        var height = 0;
+
+        for (var i = 0; i < count; ++i) {
+            u += zigZagDecode(uBuffer[i]);
+            v += zigZagDecode(vBuffer[i]);
+
+            uBuffer[i] = u;
+            vBuffer[i] = v;
+
+            if (defined(heightBuffer)) {
+                height += zigZagDecode(heightBuffer[i]);
+                heightBuffer[i] = height;
+            }
+        }
     };
 
     return AttributeCompression;
@@ -14281,6 +14340,28 @@ define('Core/Plane',[
         return Cartesian3.dot(plane.normal, point) + plane.distance;
     };
 
+    var scratchCartesian = new Cartesian3();
+    /**
+     * Projects a point onto the plane.
+     * @param {Plane} plane The plane to project the point onto
+     * @param {Cartesian3} point The point to project onto the plane
+     * @param {Cartesian3} [result] The result point.  If undefined, a new Cartesian3 will be created.
+     */
+    Plane.projectPointOntoPlane = function(plane, point, result) {
+                Check.typeOf.object('plane', plane);
+        Check.typeOf.object('point', point);
+        
+        if (!defined(result)) {
+            result = new Cartesian3();
+        }
+
+        // projectedPoint = point - (normal.point + scale) * normal
+        var pointDistance = Plane.getPointDistance(plane, point);
+        var scaledNormal = Cartesian3.multiplyByScalar(plane.normal, pointDistance, scratchCartesian);
+
+        return Cartesian3.subtract(point, scaledNormal, result);
+    };
+
     var scratchPosition = new Cartesian3();
     /**
      * Transforms the plane by the given transformation matrix.
@@ -22354,6 +22435,7 @@ define('Core/OrientedBoundingBox',[
         './Cartesian2',
         './Cartesian3',
         './Cartographic',
+        './Check',
         './defaultValue',
         './defined',
         './DeveloperError',
@@ -22370,6 +22452,7 @@ define('Core/OrientedBoundingBox',[
         Cartesian2,
         Cartesian3,
         Cartographic,
+        Check,
         defaultValue,
         defined,
         DeveloperError,
@@ -22420,6 +22503,55 @@ define('Core/OrientedBoundingBox',[
         this.halfAxes = Matrix3.clone(defaultValue(halfAxes, Matrix3.ZERO));
     }
 
+    /**
+     * The number of elements used to pack the object into an array.
+     * @type {Number}
+     */
+    OrientedBoundingBox.packedLength = Cartesian3.packedLength + Matrix3.packedLength;
+
+    /**
+     * Stores the provided instance into the provided array.
+     *
+     * @param {OrientedBoundingBox} value The value to pack.
+     * @param {Number[]} array The array to pack into.
+     * @param {Number} [startingIndex=0] The index into the array at which to start packing the elements.
+     *
+     * @returns {Number[]} The array that was packed into
+     */
+    OrientedBoundingBox.pack = function(value, array, startingIndex) {
+                Check.typeOf.object('value', value);
+        Check.defined('array', array);
+        
+        startingIndex = defaultValue(startingIndex, 0);
+
+        Cartesian3.pack(value.center, array, startingIndex);
+        Matrix3.pack(value.halfAxes, array, startingIndex + Cartesian3.packedLength);
+
+        return array;
+    };
+
+    /**
+     * Retrieves an instance from a packed array.
+     *
+     * @param {Number[]} array The packed array.
+     * @param {Number} [startingIndex=0] The starting index of the element to be unpacked.
+     * @param {OrientedBoundingBox} [result] The object into which to store the result.
+     * @returns {OrientedBoundingBox} The modified result parameter or a new OrientedBoundingBox instance if one was not provided.
+     */
+    OrientedBoundingBox.unpack = function(array, startingIndex, result) {
+                Check.defined('array', array);
+        
+        startingIndex = defaultValue(startingIndex, 0);
+
+        if (!defined(result)) {
+            result = new OrientedBoundingBox();
+        }
+
+        Cartesian3.unpack(array, startingIndex, result.center);
+        Matrix3.unpack(array, startingIndex + Cartesian3.packedLength, result.halfAxes);
+        return result;
+    };
+
     var scratchCartesian1 = new Cartesian3();
     var scratchCartesian2 = new Cartesian3();
     var scratchCartesian3 = new Cartesian3();
@@ -22437,7 +22569,7 @@ define('Core/OrientedBoundingBox',[
      * This is an implementation of Stefan Gottschalk's Collision Queries using Oriented Bounding Boxes solution (PHD thesis).
      * Reference: http://gamma.cs.unc.edu/users/gottschalk/main.pdf
      *
-     * @param {Cartesian3[]} positions List of {@link Cartesian3} points that the bounding box will enclose.
+     * @param {Cartesian3[]} [positions] List of {@link Cartesian3} points that the bounding box will enclose.
      * @param {OrientedBoundingBox} [result] The object onto which to store the result.
      * @returns {OrientedBoundingBox} The modified result parameter or a new OrientedBoundingBox instance if one was not provided.
      *

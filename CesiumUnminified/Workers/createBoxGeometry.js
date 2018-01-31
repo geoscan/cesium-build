@@ -2019,6 +2019,22 @@ define('Core/Cartesian3',[
     };
 
     /**
+     * Projects vector a onto vector b
+     * @param {Cartesian3} a The vector that needs projecting
+     * @param {Cartesian3} b The vector to project onto
+     * @param {Cartesian3} result The result cartesian
+     * @returns {Cartesian3} The modified result parameter
+     */
+    Cartesian3.projectVector = function(a, b, result) {
+                Check.defined('a', a);
+        Check.defined('b', b);
+        Check.defined('result', result);
+        
+        var scalar = Cartesian3.dot(a, b) / Cartesian3.dot(b, b);
+        return Cartesian3.multiplyByScalar(b, scalar, result);
+    };
+
+    /**
      * Compares the provided Cartesians componentwise and returns
      * <code>true</code> if they are equal, <code>false</code> otherwise.
      *
@@ -13645,6 +13661,24 @@ define('Core/BoxGeometry',[
             primitiveType : PrimitiveType.TRIANGLES,
             boundingSphere : new BoundingSphere(Cartesian3.ZERO, radius)
         });
+    };
+
+    var unitBoxGeometry;
+
+    /**
+     * Returns the geometric representation of a unit box, including its vertices, indices, and a bounding sphere.
+     * @returns {Geometry} The computed vertices and indices.
+     *
+     * @private
+     */
+    BoxGeometry.getUnitBox = function() {
+        if (!defined(unitBoxGeometry)) {
+            unitBoxGeometry = BoxGeometry.createGeometry(BoxGeometry.fromDimensions({
+                dimensions : new Cartesian3(1.0, 1.0, 1.0),
+                vertexFormat : VertexFormat.POSITION_ONLY
+            }));
+        }
+        return unitBoxGeometry;
     };
 
     return BoxGeometry;
