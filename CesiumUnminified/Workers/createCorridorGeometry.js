@@ -11185,6 +11185,14 @@ define('Core/FeatureDetection',[
         return isFirefox() && firefoxVersionResult;
     }
 
+    var isNodeJsResult;
+    function isNodeJs() {
+        if (!defined(isNodeJsResult)) {
+            isNodeJsResult = typeof process === 'object' && Object.prototype.toString.call(process) === '[object process]'; // eslint-disable-line
+        }
+        return isNodeJsResult;
+    }
+
     var hasPointerEvents;
     function supportsPointerEvents() {
         if (!defined(hasPointerEvents)) {
@@ -11252,6 +11260,7 @@ define('Core/FeatureDetection',[
         isFirefox : isFirefox,
         firefoxVersion : firefoxVersion,
         isWindows : isWindows,
+        isNodeJs: isNodeJs,
         hardwareConcurrency : defaultValue(theNavigator.hardwareConcurrency, 3),
         supportsPointerEvents : supportsPointerEvents,
         supportsImageRenderingPixelated: supportsImageRenderingPixelated,
@@ -11291,6 +11300,17 @@ define('Core/FeatureDetection',[
      */
     FeatureDetection.supportsWebWorkers = function() {
         return typeof Worker !== 'undefined';
+    };
+
+    /**
+     * Detects whether the current browser supports Web Assembly.
+     *
+     * @returns {Boolean} true if the browsers supports Web Assembly, false if not.
+     *
+     * @see {@link https://developer.mozilla.org/en-US/docs/WebAssembly}
+     */
+    FeatureDetection.supportsWebAssembly = function() {
+        return typeof WebAssembly !== 'undefined' && !FeatureDetection.isEdge();
     };
 
     return FeatureDetection;
@@ -13856,10 +13876,10 @@ define('Core/IntersectionTests',[
 
         if (q2 > 1.0) {
             // Outside ellipsoid.
-            if (qw >= 0.0) {
-                // Looking outward or tangent (0 intersections).
-                return undefined;
-            }
+//            if (qw >= 0.0) {
+//                // Looking outward or tangent (0 intersections).
+//                return undefined;
+//            }
 
             // qw < 0.0.
             var qw2 = qw * qw;
@@ -13874,8 +13894,8 @@ define('Core/IntersectionTests',[
                 // Distinct roots (2 intersections).
                 discriminant = qw * qw - product;
                 temp = -qw + Math.sqrt(discriminant); // Avoid cancellation.
-                var root0 = temp / w2;
-                var root1 = difference / temp;
+                root0 = temp / w2;
+                root1 = difference / temp;
                 if (root0 < root1) {
                     return new Interval(root0, root1);
                 }
@@ -18857,14 +18877,26 @@ define('Core/getAbsoluteUri',[
      * var absoluteUri = Cesium.getAbsoluteUri('awesome.png', 'https://test.com');
      */
     function getAbsoluteUri(relative, base) {
-        return getAbsoluteUri._implementation(relative, base, document);
+        var documentObject;
+        if (typeof document !== 'undefined') {
+            documentObject = document;
+        }
+
+        return getAbsoluteUri._implementation(relative, base, documentObject);
     }
 
     getAbsoluteUri._implementation = function(relative, base, documentObject) {
                 if (!defined(relative)) {
             throw new DeveloperError('relative uri is required.');
         }
-                base = defaultValue(base, defaultValue(documentObject.baseURI, documentObject.location.href));
+        
+        if (!defined(base)) {
+            if (typeof documentObject === 'undefined') {
+                return relative;
+            }
+            base = defaultValue(documentObject.baseURI, documentObject.location.href);
+        }
+
         var baseUri = new Uri(base);
         var relativeUri = new Uri(relative);
         return relativeUri.resolve(baseUri).toString();
@@ -20019,6 +20051,7 @@ define('Core/RequestScheduler',[
         '../ThirdParty/Uri',
         '../ThirdParty/when',
         './Check',
+        './defaultValue',
         './defined',
         './defineProperties',
         './Event',
@@ -20030,6 +20063,7 @@ define('Core/RequestScheduler',[
         Uri,
         when,
         Check,
+        defaultValue,
         defined,
         defineProperties,
         Event,
@@ -20084,11 +20118,20 @@ define('Core/RequestScheduler',[
     RequestScheduler.maximumRequests = 50;
 
     /**
-     * The maximum number of simultaneous active requests per server. Un-throttled requests do not observe this limit.
+     * The maximum number of simultaneous active requests per server. Un-throttled requests or servers specifically
+     * listed in requestsByServer do not observe this limit.
      * @type {Number}
      * @default 6
      */
     RequestScheduler.maximumRequestsPerServer = 6;
+
+    /**
+     * A per serverKey list of overrides to use for throttling instead of maximumRequestsPerServer
+     */
+    RequestScheduler.requestsByServer = {
+        'api.cesium.com:443': 18,
+        'assets.cesium.com:443': 18
+    };
 
     /**
      * Specifies if the request scheduler should throttle incoming requests, or let the browser queue requests under its control.
@@ -20163,7 +20206,8 @@ define('Core/RequestScheduler',[
     }
 
     function serverHasOpenSlots(serverKey) {
-        return numberOfActiveRequestsByServer[serverKey] < RequestScheduler.maximumRequestsPerServer;
+        var maxRequests = defaultValue(RequestScheduler.requestsByServer[serverKey], RequestScheduler.maximumRequestsPerServer);
+        return numberOfActiveRequestsByServer[serverKey] < maxRequests;
     }
 
     function issueRequest(request) {
@@ -20609,6 +20653,7 @@ define('Core/Resource',[
         './defineProperties',
         './deprecationWarning',
         './DeveloperError',
+        './FeatureDetection',
         './freezeObject',
         './getAbsoluteUri',
         './getBaseUri',
@@ -20636,6 +20681,7 @@ define('Core/Resource',[
         defineProperties,
         deprecationWarning,
         DeveloperError,
+        FeatureDetection,
         freezeObject,
         getAbsoluteUri,
         getBaseUri,
@@ -22023,6 +22069,7 @@ define('Core/Resource',[
      *
      * @param {String|Object} options A url or an object with the following properties
      * @param {String} options.url The url of the resource.
+     * @param {Object} [options.data] Data that is posted with the resource.
      * @param {Object} [options.queryParameters] An object containing query parameters that will be sent when retrieving the resource.
      * @param {Object} [options.templateValues] Key/Value pairs that are used to replace template values (eg. {x}).
      * @param {Object} [options.headers={}] Additional HTTP headers that will be sent.
@@ -22039,7 +22086,8 @@ define('Core/Resource',[
         return resource.delete({
             // Make copy of just the needed fields because headers can be passed to both the constructor and to fetch
             responseType: options.responseType,
-            overrideMimeType: options.overrideMimeType
+            overrideMimeType: options.overrideMimeType,
+            data: options.data
         });
     };
 
@@ -22163,6 +22211,7 @@ define('Core/Resource',[
      *
      * @param {Object} data Data that is posted with the resource.
      * @param {Object} [options] Object with the following properties:
+     * @param {Object} [options.data] Data that is posted with the resource.
      * @param {String} [options.responseType] The type of response.  This controls the type of item returned.
      * @param {Object} [options.headers] Additional HTTP headers to send with the request, if any.
      * @param {String} [options.overrideMimeType] Overrides the MIME type returned by the server.
@@ -22367,10 +22416,72 @@ define('Core/Resource',[
         image.src = url;
     };
 
+    function decodeResponse(loadWithHttpResponse, responseType) {
+        switch (responseType) {
+          case 'text':
+              return loadWithHttpResponse.toString('utf8');
+          case 'json':
+              return JSON.parse(loadWithHttpResponse.toString('utf8'));
+          default:
+              return new Uint8Array(loadWithHttpResponse).buffer;
+        }
+    }
+
+    function loadWithHttpRequest(url, responseType, method, data, headers, deferred, overrideMimeType) {
+        // Note: only the 'json' and 'text' responseTypes transforms the loaded buffer
+        var URL = require('url').parse(url);
+        var http = URL.protocol === 'https:' ? require('https') : require('http');
+        var zlib = require('zlib');
+        var options = {
+            protocol : URL.protocol,
+            hostname : URL.hostname,
+            port : URL.port,
+            path : URL.path,
+            query : URL.query,
+            method : method,
+            headers : headers
+        };
+
+        http.request(options)
+            .on('response', function(res) {
+                if (res.statusCode < 200 || res.statusCode >= 300) {
+                    deferred.reject(new RequestErrorEvent(res.statusCode, res, res.headers));
+                    return;
+                }
+
+                var chunkArray = [];
+                res.on('data', function(chunk) {
+                    chunkArray.push(chunk);
+                });
+
+                res.on('end', function() {
+                    var result = Buffer.concat(chunkArray); // eslint-disable-line
+                    if (res.headers['content-encoding'] === 'gzip') {
+                        zlib.gunzip(result, function(error, resultUnzipped) {
+                            if (error) {
+                                deferred.reject(new RuntimeError('Error decompressing response.'));
+                            } else {
+                                deferred.resolve(decodeResponse(resultUnzipped, responseType));
+                            }
+                        });
+                    } else {
+                        deferred.resolve(decodeResponse(result, responseType));
+                    }
+                });
+            }).on('error', function(e) {
+                deferred.reject(new RequestErrorEvent());
+            }).end();
+    }
+
     Resource._Implementations.loadWithXhr = function(url, responseType, method, data, headers, deferred, overrideMimeType) {
         var dataUriRegexResult = dataUriRegex.exec(url);
         if (dataUriRegexResult !== null) {
             deferred.resolve(decodeDataUri(dataUriRegexResult, responseType));
+            return;
+        }
+
+        if (FeatureDetection.isNodeJs()) {
+            loadWithHttpRequest(url, responseType, method, data, headers, deferred, overrideMimeType);
             return;
         }
 
@@ -22895,13 +23006,11 @@ define('Core/EarthOrientationParameters',[
 });
 
 define('Core/buildModuleUrl',[
-        '../ThirdParty/Uri',
         './defined',
         './DeveloperError',
         './Resource',
         'require'
     ], function(
-        Uri,
         defined,
         DeveloperError,
         Resource,
@@ -29137,7 +29246,7 @@ define('Core/CorridorGeometry',[
 
         var height = corridorGeometry._height;
         var extrudedHeight = corridorGeometry._extrudedHeight;
-        var extrude = !CesiumMath.equalsEpsilon(height, extrudedHeight, CesiumMath.EPSILON2);
+        var extrude = !CesiumMath.equalsEpsilon(height, extrudedHeight, 0, CesiumMath.EPSILON2);
 
         var vertexFormat = corridorGeometry._vertexFormat;
         var params = {

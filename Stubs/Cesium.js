@@ -501,6 +501,10 @@ define('Core/Ion', function() {
     return Cesium['Ion'];
 });
 
+define('Core/IonGeocoderService', function() {
+    return Cesium['IonGeocoderService'];
+});
+
 define('Core/IonResource', function() {
     return Cesium['IonResource'];
 });
@@ -1721,6 +1725,10 @@ define('Scene/createTileMapServiceImageryProvider', function() {
     return Cesium['createTileMapServiceImageryProvider'];
 });
 
+define('Scene/createWorldImagery', function() {
+    return Cesium['createWorldImagery'];
+});
+
 define('Scene/CreditDisplay', function() {
     return Cesium['CreditDisplay'];
 });
@@ -1907,6 +1915,10 @@ define('Scene/InvertClassification', function() {
 
 define('Scene/IonImageryProvider', function() {
     return Cesium['IonImageryProvider'];
+});
+
+define('Scene/IonWorldImageryStyle', function() {
+    return Cesium['IonWorldImageryStyle'];
 });
 
 define('Scene/JobScheduler', function() {
