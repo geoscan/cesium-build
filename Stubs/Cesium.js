@@ -5,6 +5,10 @@ define('Core/appendForwardSlash', function() {
     return Cesium['appendForwardSlash'];
 });
 
+define('Core/ApproximateTerrainHeights', function() {
+    return Cesium['ApproximateTerrainHeights'];
+});
+
 define('Core/arrayFill', function() {
     return Cesium['arrayFill'];
 });
@@ -761,6 +765,10 @@ define('Core/Rectangle', function() {
     return Cesium['Rectangle'];
 });
 
+define('Core/RectangleCollisionChecker', function() {
+    return Cesium['RectangleCollisionChecker'];
+});
+
 define('Core/RectangleGeometry', function() {
     return Cesium['RectangleGeometry'];
 });
@@ -1153,6 +1161,10 @@ define('DataSources/GridMaterialProperty', function() {
     return Cesium['GridMaterialProperty'];
 });
 
+define('DataSources/GroundGeometryUpdater', function() {
+    return Cesium['GroundGeometryUpdater'];
+});
+
 define('DataSources/ImageMaterialProperty', function() {
     return Cesium['ImageMaterialProperty'];
 });
@@ -1331,6 +1343,10 @@ define('DataSources/StaticGeometryPerMaterialBatch', function() {
 
 define('DataSources/StaticGroundGeometryColorBatch', function() {
     return Cesium['StaticGroundGeometryColorBatch'];
+});
+
+define('DataSources/StaticGroundGeometryPerMaterialBatch', function() {
+    return Cesium['StaticGroundGeometryPerMaterialBatch'];
 });
 
 define('DataSources/StaticOutlineGeometryBatch', function() {
@@ -1809,10 +1825,6 @@ define('Scene/FrustumCommands', function() {
     return Cesium['FrustumCommands'];
 });
 
-define('Scene/FXAA', function() {
-    return Cesium['FXAA'];
-});
-
 define('Scene/Geometry3DTileContent', function() {
     return Cesium['Geometry3DTileContent'];
 });
@@ -2021,6 +2033,10 @@ define('Scene/OIT', function() {
     return Cesium['OIT'];
 });
 
+define('Scene/OrderedGroundPrimitiveCollection', function() {
+    return Cesium['OrderedGroundPrimitiveCollection'];
+});
+
 define('Scene/Particle', function() {
     return Cesium['Particle'];
 });
@@ -2085,6 +2101,30 @@ define('Scene/PolylineMaterialAppearance', function() {
     return Cesium['PolylineMaterialAppearance'];
 });
 
+define('Scene/PostProcessStage', function() {
+    return Cesium['PostProcessStage'];
+});
+
+define('Scene/PostProcessStageCollection', function() {
+    return Cesium['PostProcessStageCollection'];
+});
+
+define('Scene/PostProcessStageComposite', function() {
+    return Cesium['PostProcessStageComposite'];
+});
+
+define('Scene/PostProcessStageLibrary', function() {
+    return Cesium['PostProcessStageLibrary'];
+});
+
+define('Scene/PostProcessStageSampleMode', function() {
+    return Cesium['PostProcessStageSampleMode'];
+});
+
+define('Scene/PostProcessStageTextureCache', function() {
+    return Cesium['PostProcessStageTextureCache'];
+});
+
 define('Scene/Primitive', function() {
     return Cesium['Primitive'];
 });
@@ -2125,6 +2165,10 @@ define('Scene/Scene', function() {
     return Cesium['Scene'];
 });
 
+define('Scene/SceneFramebuffer', function() {
+    return Cesium['SceneFramebuffer'];
+});
+
 define('Scene/SceneMode', function() {
     return Cesium['SceneMode'];
 });
@@ -2151,6 +2195,10 @@ define('Scene/ShadowMapShader', function() {
 
 define('Scene/ShadowMode', function() {
     return Cesium['ShadowMode'];
+});
+
+define('Scene/ShadowVolumeAppearance', function() {
+    return Cesium['ShadowVolumeAppearance'];
 });
 
 define('Scene/SingleTileImageryProvider', function() {
@@ -2529,6 +2577,14 @@ define('Shaders/Builtin/Functions/antialias', function() {
     return Cesium['antialias'];
 });
 
+define('Shaders/Builtin/Functions/approximateSphericalCoordinates', function() {
+    return Cesium['approximateSphericalCoordinates'];
+});
+
+define('Shaders/Builtin/Functions/branchFreeTernaryFloat', function() {
+    return Cesium['branchFreeTernaryFloat'];
+});
+
 define('Shaders/Builtin/Functions/cascadeColor', function() {
     return Cesium['cascadeColor'];
 });
@@ -2645,6 +2701,10 @@ define('Shaders/Builtin/Functions/latitudeToWebMercatorFraction', function() {
     return Cesium['latitudeToWebMercatorFraction'];
 });
 
+define('Shaders/Builtin/Functions/lineDistance', function() {
+    return Cesium['lineDistance'];
+});
+
 define('Shaders/Builtin/Functions/luminance', function() {
     return Cesium['luminance'];
 });
@@ -2677,12 +2737,20 @@ define('Shaders/Builtin/Functions/phong', function() {
     return Cesium['phong'];
 });
 
+define('Shaders/Builtin/Functions/planeDistance', function() {
+    return Cesium['planeDistance'];
+});
+
 define('Shaders/Builtin/Functions/pointAlongRay', function() {
     return Cesium['pointAlongRay'];
 });
 
 define('Shaders/Builtin/Functions/rayEllipsoidIntersectionInterval', function() {
     return Cesium['rayEllipsoidIntersectionInterval'];
+});
+
+define('Shaders/Builtin/Functions/readDepth', function() {
+    return Cesium['readDepth'];
 });
 
 define('Shaders/Builtin/Functions/reverseLogDepth', function() {
@@ -2909,28 +2977,88 @@ define('Shaders/PolylineVS', function() {
     return Cesium['PolylineVS'];
 });
 
-define('Shaders/PostProcessFilters/AdditiveBlend', function() {
+define('Shaders/PostProcessStages/AdditiveBlend', function() {
     return Cesium['AdditiveBlend'];
 });
 
-define('Shaders/PostProcessFilters/BrightPass', function() {
+define('Shaders/PostProcessStages/AmbientOcclusionGenerate', function() {
+    return Cesium['AmbientOcclusionGenerate'];
+});
+
+define('Shaders/PostProcessStages/AmbientOcclusionModulate', function() {
+    return Cesium['AmbientOcclusionModulate'];
+});
+
+define('Shaders/PostProcessStages/BlackAndWhite', function() {
+    return Cesium['BlackAndWhite'];
+});
+
+define('Shaders/PostProcessStages/BloomComposite', function() {
+    return Cesium['BloomComposite'];
+});
+
+define('Shaders/PostProcessStages/Brightness', function() {
+    return Cesium['Brightness'];
+});
+
+define('Shaders/PostProcessStages/BrightPass', function() {
     return Cesium['BrightPass'];
 });
 
-define('Shaders/PostProcessFilters/FXAA', function() {
+define('Shaders/PostProcessStages/ContrastBias', function() {
+    return Cesium['ContrastBias'];
+});
+
+define('Shaders/PostProcessStages/DepthOfField', function() {
+    return Cesium['DepthOfField'];
+});
+
+define('Shaders/PostProcessStages/DepthView', function() {
+    return Cesium['DepthView'];
+});
+
+define('Shaders/PostProcessStages/DepthViewPacked', function() {
+    return Cesium['DepthViewPacked'];
+});
+
+define('Shaders/PostProcessStages/EdgeDetection', function() {
+    return Cesium['EdgeDetection'];
+});
+
+define('Shaders/PostProcessStages/FXAA', function() {
     return Cesium['FXAA'];
 });
 
-define('Shaders/PostProcessFilters/GaussianBlur1D', function() {
+define('Shaders/PostProcessStages/GaussianBlur1D', function() {
     return Cesium['GaussianBlur1D'];
 });
 
-define('Shaders/PostProcessFilters/PassThrough', function() {
+define('Shaders/PostProcessStages/LensFlare', function() {
+    return Cesium['LensFlare'];
+});
+
+define('Shaders/PostProcessStages/LinearDepth', function() {
+    return Cesium['LinearDepth'];
+});
+
+define('Shaders/PostProcessStages/NightVision', function() {
+    return Cesium['NightVision'];
+});
+
+define('Shaders/PostProcessStages/PassThrough', function() {
     return Cesium['PassThrough'];
 });
 
-define('Shaders/PostProcessFilters/PointCloudEyeDomeLighting', function() {
+define('Shaders/PostProcessStages/PassThroughDepth', function() {
+    return Cesium['PassThroughDepth'];
+});
+
+define('Shaders/PostProcessStages/PointCloudEyeDomeLighting', function() {
     return Cesium['PointCloudEyeDomeLighting'];
+});
+
+define('Shaders/PostProcessStages/Silhouette', function() {
+    return Cesium['Silhouette'];
 });
 
 define('Shaders/ReprojectWebMercatorFS', function() {
@@ -2941,12 +3069,16 @@ define('Shaders/ReprojectWebMercatorVS', function() {
     return Cesium['ReprojectWebMercatorVS'];
 });
 
-define('Shaders/ShadowVolumeFS', function() {
-    return Cesium['ShadowVolumeFS'];
+define('Shaders/ShadowVolumeAppearanceFS', function() {
+    return Cesium['ShadowVolumeAppearanceFS'];
 });
 
-define('Shaders/ShadowVolumeVS', function() {
-    return Cesium['ShadowVolumeVS'];
+define('Shaders/ShadowVolumeAppearanceVS', function() {
+    return Cesium['ShadowVolumeAppearanceVS'];
+});
+
+define('Shaders/ShadowVolumeFS', function() {
+    return Cesium['ShadowVolumeFS'];
 });
 
 define('Shaders/SkyAtmosphereFS', function() {
@@ -2979,6 +3111,10 @@ define('Shaders/SunVS', function() {
 
 define('Shaders/Vector3DTilePolylinesVS', function() {
     return Cesium['Vector3DTilePolylinesVS'];
+});
+
+define('Shaders/VectorTileVS', function() {
+    return Cesium['VectorTileVS'];
 });
 
 define('Shaders/ViewportQuadFS', function() {
@@ -3119,6 +3255,14 @@ define('ThirdParty/NoSleep', function() {
 
 define('ThirdParty/protobuf-minimal', function() {
     return Cesium['protobuf-minimal'];
+});
+
+define('ThirdParty/quickselect', function() {
+    return Cesium['quickselect'];
+});
+
+define('ThirdParty/rbush', function() {
+    return Cesium['rbush'];
 });
 
 define('ThirdParty/Shaders/FXAA3_11', function() {
