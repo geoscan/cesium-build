@@ -369,6 +369,10 @@ define('Core/GeometryInstanceAttribute', function() {
     return Cesium['GeometryInstanceAttribute'];
 });
 
+define('Core/GeometryOffsetAttribute', function() {
+    return Cesium['GeometryOffsetAttribute'];
+});
+
 define('Core/GeometryPipeline', function() {
     return Cesium['GeometryPipeline'];
 });
@@ -427,6 +431,10 @@ define('Core/GoogleEarthEnterpriseTileInformation', function() {
 
 define('Core/GregorianDate', function() {
     return Cesium['GregorianDate'];
+});
+
+define('Core/GroundPolylineGeometry', function() {
+    return Cesium['GroundPolylineGeometry'];
 });
 
 define('Core/HeadingPitchRange', function() {
@@ -619,6 +627,10 @@ define('Core/objectToQuery', function() {
 
 define('Core/Occluder', function() {
     return Cesium['Occluder'];
+});
+
+define('Core/OffsetGeometryInstanceAttribute', function() {
+    return Cesium['OffsetGeometryInstanceAttribute'];
 });
 
 define('Core/oneTimeWarning', function() {
@@ -1349,6 +1361,10 @@ define('DataSources/StaticGroundGeometryPerMaterialBatch', function() {
     return Cesium['StaticGroundGeometryPerMaterialBatch'];
 });
 
+define('DataSources/StaticGroundPolylinePerMaterialBatch', function() {
+    return Cesium['StaticGroundPolylinePerMaterialBatch'];
+});
+
 define('DataSources/StaticOutlineGeometryBatch', function() {
     return Cesium['StaticOutlineGeometryBatch'];
 });
@@ -1359,6 +1375,10 @@ define('DataSources/StripeMaterialProperty', function() {
 
 define('DataSources/StripeOrientation', function() {
     return Cesium['StripeOrientation'];
+});
+
+define('DataSources/TerrainOffsetProperty', function() {
+    return Cesium['TerrainOffsetProperty'];
 });
 
 define('DataSources/TimeIntervalCollectionPositionProperty', function() {
@@ -1875,6 +1895,10 @@ define('Scene/GoogleEarthEnterpriseMapsProvider', function() {
 
 define('Scene/GridImageryProvider', function() {
     return Cesium['GridImageryProvider'];
+});
+
+define('Scene/GroundPolylinePrimitive', function() {
+    return Cesium['GroundPolylinePrimitive'];
 });
 
 define('Scene/GroundPrimitive', function() {
@@ -2581,8 +2605,8 @@ define('Shaders/Builtin/Functions/approximateSphericalCoordinates', function() {
     return Cesium['approximateSphericalCoordinates'];
 });
 
-define('Shaders/Builtin/Functions/branchFreeTernaryFloat', function() {
-    return Cesium['branchFreeTernaryFloat'];
+define('Shaders/Builtin/Functions/branchFreeTernary', function() {
+    return Cesium['branchFreeTernary'];
 });
 
 define('Shaders/Builtin/Functions/cascadeColor', function() {
@@ -2647,6 +2671,10 @@ define('Shaders/Builtin/Functions/eyeOffset', function() {
 
 define('Shaders/Builtin/Functions/eyeToWindowCoordinates', function() {
     return Cesium['eyeToWindowCoordinates'];
+});
+
+define('Shaders/Builtin/Functions/fastApproximateAtan', function() {
+    return Cesium['fastApproximateAtan'];
 });
 
 define('Shaders/Builtin/Functions/fog', function() {
@@ -2973,6 +3001,22 @@ define('Shaders/PolylineFS', function() {
     return Cesium['PolylineFS'];
 });
 
+define('Shaders/PolylineShadowVolumeFS', function() {
+    return Cesium['PolylineShadowVolumeFS'];
+});
+
+define('Shaders/PolylineShadowVolumeMorphFS', function() {
+    return Cesium['PolylineShadowVolumeMorphFS'];
+});
+
+define('Shaders/PolylineShadowVolumeMorphVS', function() {
+    return Cesium['PolylineShadowVolumeMorphVS'];
+});
+
+define('Shaders/PolylineShadowVolumeVS', function() {
+    return Cesium['PolylineShadowVolumeVS'];
+});
+
 define('Shaders/PolylineVS', function() {
     return Cesium['PolylineVS'];
 });
@@ -3035,10 +3079,6 @@ define('Shaders/PostProcessStages/GaussianBlur1D', function() {
 
 define('Shaders/PostProcessStages/LensFlare', function() {
     return Cesium['LensFlare'];
-});
-
-define('Shaders/PostProcessStages/LinearDepth', function() {
-    return Cesium['LinearDepth'];
 });
 
 define('Shaders/PostProcessStages/NightVision', function() {
