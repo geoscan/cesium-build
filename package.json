@@ -30,7 +30,7 @@
     "email": "cesium-dev@googlegroups.com"
   },
   "dependencies": {
-    "npm": "^6.2.0",
+    "npm": "^6.4.1",
     "requirejs": "^2.3.2"
   },
   "devDependencies": {
