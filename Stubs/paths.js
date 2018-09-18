@@ -293,7 +293,6 @@ define(function() {
         'DataSources/GeoJsonDataSource' : '../Stubs/Cesium',
         'DataSources/GeometryUpdater' : '../Stubs/Cesium',
         'DataSources/GeometryVisualizer' : '../Stubs/Cesium',
-        'DataSources/GmlDataSource' : '../Stubs/Cesium',
         'DataSources/GridMaterialProperty' : '../Stubs/Cesium',
         'DataSources/GroundGeometryUpdater' : '../Stubs/Cesium',
         'DataSources/ImageMaterialProperty' : '../Stubs/Cesium',

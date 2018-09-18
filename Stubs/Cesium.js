@@ -1169,10 +1169,6 @@ define('DataSources/GeometryVisualizer', function() {
     return Cesium['GeometryVisualizer'];
 });
 
-define('DataSources/GmlDataSource', function() {
-    return Cesium['GmlDataSource'];
-});
-
 define('DataSources/GridMaterialProperty', function() {
     return Cesium['GridMaterialProperty'];
 });
