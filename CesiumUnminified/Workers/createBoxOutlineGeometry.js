@@ -364,10 +364,65 @@ define('Core/defaultValue',[
     /**
      * A frozen empty object that can be used as the default value for options passed as
      * an object literal.
+     * @type {Object}
      */
     defaultValue.EMPTY_OBJECT = freezeObject({});
 
     return defaultValue;
+});
+
+define('Core/arrayFill',[
+        './Check',
+        './defaultValue',
+        './defined'
+    ], function(
+        Check,
+        defaultValue,
+        defined) {
+    'use strict';
+
+    /**
+     * Fill an array or a portion of an array with a given value.
+     *
+     * @param {Array} array The array to fill.
+     * @param {*} value The value to fill the array with.
+     * @param {Number} [start=0] The index to start filling at.
+     * @param {Number} [end=array.length] The index to end stop at.
+     *
+     * @returns {Array} The resulting array.
+     * @private
+     */
+    function arrayFill(array, value, start, end) {
+                Check.defined('array', array);
+        Check.defined('value', value);
+        if (defined(start)) {
+            Check.typeOf.number('start', start);
+        }
+        if (defined(end)) {
+            Check.typeOf.number('end', end);
+        }
+        
+        if (typeof array.fill === 'function') {
+            return array.fill(value, start, end);
+        }
+
+        var length = array.length >>> 0;
+        var relativeStart = defaultValue(start, 0);
+        // If negative, find wrap around position
+        var k = (relativeStart < 0) ? Math.max(length + relativeStart, 0) : Math.min(relativeStart, length);
+        var relativeEnd = defaultValue(end, length);
+        // If negative, find wrap around position
+        var last = (relativeEnd < 0) ? Math.max(length + relativeEnd, 0) : Math.min(relativeEnd, length);
+
+        // Fill array accordingly
+        while (k < last) {
+            array[k] = value;
+            k++;
+        }
+        return array;
+    }
+
+    return arrayFill;
 });
 
 /*
@@ -737,7 +792,15 @@ define('Core/Math',[
     CesiumMath.EPSILON20 = 0.00000000000000000001;
 
     /**
-     * 3.986004418e14
+     * 0.000000000000000000001
+     * @type {Number}
+     * @constant
+     */
+    CesiumMath.EPSILON21 = 0.000000000000000000001;
+
+    /**
+     * The gravitational parameter of the Earth in meters cubed
+     * per second squared as defined by the WGS84 model: 3.986004418e14
      * @type {Number}
      * @constant
      */
@@ -2180,6 +2243,25 @@ define('Core/Cartesian3',[
         result.x = x;
         result.y = y;
         result.z = z;
+        return result;
+    };
+
+    /**
+     * Computes the midpoint between the right and left Cartesian.
+     * @param {Cartesian3} left The first Cartesian.
+     * @param {Cartesian3} right The second Cartesian.
+     * @param {Cartesian3} result The object onto which to store the result.
+     * @returns {Cartesian3} The midpoint.
+     */
+    Cartesian3.midpoint = function(left, right, result) {
+                Check.typeOf.object('left', left);
+        Check.typeOf.object('right', right);
+        Check.typeOf.object('result', result);
+        
+        result.x = (left.x + right.x) * 0.5;
+        result.y = (left.y + right.y) * 0.5;
+        result.z = (left.z + right.z) * 0.5;
+
         return result;
     };
 
@@ -7138,7 +7220,7 @@ define('Core/Matrix4',[
      *
      * @param {Matrix4} matrix The matrix to use.
      * @param {Cartesian3} translation The translation that replaces the translation of the provided matrix.
-     * @param {Cartesian4} result The object onto which to store the result.
+     * @param {Matrix4} result The object onto which to store the result.
      * @returns {Matrix4} The modified result parameter.
      */
     Matrix4.setTranslation = function(matrix, translation, result) {
@@ -7167,6 +7249,25 @@ define('Core/Matrix4',[
         result[15] = matrix[15];
 
         return result;
+    };
+
+    var scaleScratch = new Cartesian3();
+    /**
+     * Computes a new matrix that replaces the scale with the provided scale.  This assumes the matrix is an affine transformation
+     *
+     * @param {Matrix4} matrix The matrix to use.
+     * @param {Cartesian3} scale The scale that replaces the scale of the provided matrix.
+     * @param {Matrix4} result The object onto which to store the result.
+     * @returns {Matrix4} The modified result parameter.
+     */
+    Matrix4.setScale = function(matrix, scale, result) {
+                Check.typeOf.object('matrix', matrix);
+        Check.typeOf.object('scale', scale);
+        Check.typeOf.object('result', result);
+        
+        var existingScale = Matrix4.getScale(matrix, scaleScratch);
+        var newScale = Cartesian3.divideComponents(scale, existingScale, scaleScratch);
+        return Matrix4.multiplyByScale(matrix, newScale, result);
     };
 
     /**
@@ -8192,32 +8293,7 @@ define('Core/Matrix4',[
     Matrix4.inverse = function(matrix, result) {
                 Check.typeOf.object('matrix', matrix);
         Check.typeOf.object('result', result);
-        
-        // Special case for a zero scale matrix that can occur, for example,
-        // when a model's node has a [0, 0, 0] scale.
-        if (Matrix3.equalsEpsilon(Matrix4.getRotation(matrix, scratchInverseRotation), scratchMatrix3Zero, CesiumMath.EPSILON7) &&
-            Cartesian4.equals(Matrix4.getRow(matrix, 3, scratchBottomRow), scratchExpectedBottomRow)) {
-
-            result[0] = 0.0;
-            result[1] = 0.0;
-            result[2] = 0.0;
-            result[3] = 0.0;
-            result[4] = 0.0;
-            result[5] = 0.0;
-            result[6] = 0.0;
-            result[7] = 0.0;
-            result[8] = 0.0;
-            result[9] = 0.0;
-            result[10] = 0.0;
-            result[11] = 0.0;
-            result[12] = -matrix[12];
-            result[13] = -matrix[13];
-            result[14] = -matrix[14];
-            result[15] = 1.0;
-            return result;
-        }
-
-        //
+                //
         // Ported from:
         //   ftp://download.intel.com/design/PentiumIII/sml/24504301.pdf
         //
@@ -8289,7 +8365,31 @@ define('Core/Matrix4',[
         // calculate determinant
         var det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3;
 
-        if (Math.abs(det) < CesiumMath.EPSILON20) {
+        if (Math.abs(det) < CesiumMath.EPSILON21) {
+                // Special case for a zero scale matrix that can occur, for example,
+                // when a model's node has a [0, 0, 0] scale.
+                if (Matrix3.equalsEpsilon(Matrix4.getRotation(matrix, scratchInverseRotation), scratchMatrix3Zero, CesiumMath.EPSILON7) &&
+                Cartesian4.equals(Matrix4.getRow(matrix, 3, scratchBottomRow), scratchExpectedBottomRow)) {
+
+                result[0] = 0.0;
+                result[1] = 0.0;
+                result[2] = 0.0;
+                result[3] = 0.0;
+                result[4] = 0.0;
+                result[5] = 0.0;
+                result[6] = 0.0;
+                result[7] = 0.0;
+                result[8] = 0.0;
+                result[9] = 0.0;
+                result[10] = 0.0;
+                result[11] = 0.0;
+                result[12] = -matrix[12];
+                result[13] = -matrix[13];
+                result[14] = -matrix[14];
+                result[15] = 1.0;
+                return result;
+            }
+
             throw new RuntimeError('matrix is not invertible because its determinate is zero.');
         }
 
@@ -9636,7 +9736,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -9907,7 +10007,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -10065,7 +10165,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -10127,9 +10227,7 @@ define('Core/BoundingSphere',[
             result = new BoundingSphere();
         }
 
-        var center = result.center;
-        Cartesian3.add(corner, oppositeCorner, center);
-        Cartesian3.multiplyByScalar(center, 0.5, center);
+        var center = Cartesian3.midpoint(corner, oppositeCorner, result.center);
         result.radius = Cartesian3.distance(center, oppositeCorner);
         return result;
     };
@@ -11172,7 +11270,9 @@ define('Core/FeatureDetection',[
             //we still need to use it if it exists in order to support browsers
             //that rely on it, such as the Windows WebBrowser control which defines
             //PointerEvent but sets navigator.pointerEnabled to false.
-            hasPointerEvents = typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
+
+            //Firefox disabled because of https://github.com/AnalyticalGraphicsInc/cesium/issues/6372
+            hasPointerEvents = !isFirefox() && typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
         }
         return hasPointerEvents;
     }
@@ -18069,7 +18169,8 @@ define('Core/isCrossOriginUrl',[
         var protocol = a.protocol;
 
         a.href = url;
-        a.href = a.href; // IE only absolutizes href on get, not set
+        // IE only absolutizes href on get, not set
+        a.href = a.href; // eslint-disable-line no-self-assign
 
         return protocol !== a.protocol || host !== a.host;
     }
@@ -21526,11 +21627,11 @@ define('Core/Resource',[
             xhr.withCredentials = true;
         }
 
+        xhr.open(method, url, true);
+
         if (defined(overrideMimeType) && defined(xhr.overrideMimeType)) {
             xhr.overrideMimeType(overrideMimeType);
         }
-
-        xhr.open(method, url, true);
 
         if (defined(headers)) {
             for (var key in headers) {
@@ -22079,7 +22180,9 @@ define('Core/buildModuleUrl',[
             a = document.createElement('a');
         }
         a.href = url;
-        a.href = a.href; // IE only absolutizes href on get, not set
+
+        // IE only absolutizes href on get, not set
+        a.href = a.href; // eslint-disable-line no-self-assign
         return a.href;
     }
 
@@ -22870,7 +22973,7 @@ define('Core/Transforms',[
      * @returns {Matrix3} The modified result parameter or a new Matrix3 instance if none was provided.
      *
      * @example
-     * //Set the view to in the inertial frame.
+     * //Set the view to the inertial frame.
      * scene.postUpdate.addEventListener(function(scene, time) {
      *    var now = Cesium.JulianDate.now();
      *    var offset = Cesium.Matrix4.multiplyByPoint(camera.transform, camera.position, new Cesium.Cartesian3());
@@ -23002,12 +23105,11 @@ define('Core/Transforms',[
      *
      * @example
      * scene.postUpdate.addEventListener(function(scene, time) {
+     *   // View in ICRF.
      *   var icrfToFixed = Cesium.Transforms.computeIcrfToFixedMatrix(time);
      *   if (Cesium.defined(icrfToFixed)) {
-     *     var offset = Cesium.Matrix4.multiplyByPoint(camera.transform, camera.position, new Cesium.Cartesian3());
-     *     var transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed)
-     *     var inverseTransform = Cesium.Matrix4.inverseTransformation(transform, new Cesium.Matrix4());
-     *     Cesium.Matrix4.multiplyByPoint(inverseTransform, offset, offset);
+     *     var offset = Cesium.Cartesian3.clone(camera.position);
+     *     var transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed);
      *     camera.lookAtTransform(transform, offset);
      *   }
      * });
@@ -23912,26 +24014,32 @@ define('Core/GeometryAttributes',[
 });
 
 define('Core/BoxOutlineGeometry',[
+        './arrayFill',
         './BoundingSphere',
         './Cartesian3',
         './Check',
         './ComponentDatatype',
         './defaultValue',
         './defined',
+        './DeveloperError',
         './Geometry',
         './GeometryAttribute',
         './GeometryAttributes',
+        './GeometryOffsetAttribute',
         './PrimitiveType'
     ], function(
+        arrayFill,
         BoundingSphere,
         Cartesian3,
         Check,
         ComponentDatatype,
         defaultValue,
         defined,
+        DeveloperError,
         Geometry,
         GeometryAttribute,
         GeometryAttributes,
+        GeometryOffsetAttribute,
         PrimitiveType) {
     'use strict';
 
@@ -23966,9 +24074,13 @@ define('Core/BoxOutlineGeometry',[
 
                 Check.typeOf.object('min', min);
         Check.typeOf.object('max', max);
+        if (defined(options.offsetAttribute) && options.offsetAttribute === GeometryOffsetAttribute.TOP) {
+            throw new DeveloperError('GeometryOffsetAttribute.TOP is not a supported options.offsetAttribute for this geometry.');
+        }
         
         this._min = Cartesian3.clone(min);
         this._max = Cartesian3.clone(max);
+        this._offsetAttribute = options.offsetAttribute;
         this._workerName = 'createBoxOutlineGeometry';
     }
 
@@ -24003,7 +24115,8 @@ define('Core/BoxOutlineGeometry',[
 
         return new BoxOutlineGeometry({
             minimum : Cartesian3.negate(corner, new Cartesian3()),
-            maximum : corner
+            maximum : corner,
+            offsetAttribute: options.offsetAttribute
         });
     };
 
@@ -24040,7 +24153,7 @@ define('Core/BoxOutlineGeometry',[
      * The number of elements used to pack the object into an array.
      * @type {Number}
      */
-    BoxOutlineGeometry.packedLength = 2 * Cartesian3.packedLength;
+    BoxOutlineGeometry.packedLength = 2 * Cartesian3.packedLength + 1;
 
     /**
      * Stores the provided instance into the provided array.
@@ -24059,6 +24172,8 @@ define('Core/BoxOutlineGeometry',[
 
         Cartesian3.pack(value._min, array, startingIndex);
         Cartesian3.pack(value._max, array, startingIndex + Cartesian3.packedLength);
+        array[startingIndex + (Cartesian3.packedLength * 2)] = defaultValue(value._offsetAttribute, -1);
+
         return array;
     };
 
@@ -24066,7 +24181,8 @@ define('Core/BoxOutlineGeometry',[
     var scratchMax = new Cartesian3();
     var scratchOptions = {
         minimum : scratchMin,
-        maximum : scratchMax
+        maximum : scratchMax,
+        offsetAttribute : undefined
     };
 
     /**
@@ -24084,13 +24200,16 @@ define('Core/BoxOutlineGeometry',[
 
         var min = Cartesian3.unpack(array, startingIndex, scratchMin);
         var max = Cartesian3.unpack(array, startingIndex + Cartesian3.packedLength, scratchMax);
+        var offsetAttribute = array[startingIndex + Cartesian3.packedLength * 2];
 
         if (!defined(result)) {
+            scratchOptions.offsetAttribute = offsetAttribute === -1 ? undefined : offsetAttribute;
             return new BoxOutlineGeometry(scratchOptions);
         }
 
         result._min = Cartesian3.clone(min, result._min);
         result._max = Cartesian3.clone(max, result._max);
+        result._offsetAttribute = offsetAttribute === -1 ? undefined : offsetAttribute;
 
         return result;
     };
@@ -24180,11 +24299,24 @@ define('Core/BoxOutlineGeometry',[
         var diff = Cartesian3.subtract(max, min, diffScratch);
         var radius = Cartesian3.magnitude(diff) * 0.5;
 
+        if (defined(boxGeometry._offsetAttribute)) {
+            var length = positions.length;
+            var applyOffset = new Uint8Array(length / 3);
+            var offsetValue = boxGeometry._offsetAttribute === GeometryOffsetAttribute.NONE ? 0 : 1;
+            arrayFill(applyOffset, offsetValue);
+            attributes.applyOffset = new GeometryAttribute({
+                componentDatatype : ComponentDatatype.UNSIGNED_BYTE,
+                componentsPerAttribute : 1,
+                values: applyOffset
+            });
+        }
+
         return new Geometry({
             attributes : attributes,
             indices : indices,
             primitiveType : PrimitiveType.LINES,
-            boundingSphere : new BoundingSphere(Cartesian3.ZERO, radius)
+            boundingSphere : new BoundingSphere(Cartesian3.ZERO, radius),
+            offsetAttribute : boxGeometry._offsetAttribute
         });
     };
 

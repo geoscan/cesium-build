@@ -364,6 +364,7 @@ define('Core/defaultValue',[
     /**
      * A frozen empty object that can be used as the default value for options passed as
      * an object literal.
+     * @type {Object}
      */
     defaultValue.EMPTY_OBJECT = freezeObject({});
 
@@ -737,7 +738,15 @@ define('Core/Math',[
     CesiumMath.EPSILON20 = 0.00000000000000000001;
 
     /**
-     * 3.986004418e14
+     * 0.000000000000000000001
+     * @type {Number}
+     * @constant
+     */
+    CesiumMath.EPSILON21 = 0.000000000000000000001;
+
+    /**
+     * The gravitational parameter of the Earth in meters cubed
+     * per second squared as defined by the WGS84 model: 3.986004418e14
      * @type {Number}
      * @constant
      */
@@ -2184,6 +2193,25 @@ define('Core/Cartesian3',[
     };
 
     /**
+     * Computes the midpoint between the right and left Cartesian.
+     * @param {Cartesian3} left The first Cartesian.
+     * @param {Cartesian3} right The second Cartesian.
+     * @param {Cartesian3} result The object onto which to store the result.
+     * @returns {Cartesian3} The midpoint.
+     */
+    Cartesian3.midpoint = function(left, right, result) {
+                Check.typeOf.object('left', left);
+        Check.typeOf.object('right', right);
+        Check.typeOf.object('result', result);
+        
+        result.x = (left.x + right.x) * 0.5;
+        result.y = (left.y + right.y) * 0.5;
+        result.z = (left.z + right.z) * 0.5;
+
+        return result;
+    };
+
+    /**
      * Returns a Cartesian3 position from longitude and latitude values given in degrees.
      *
      * @param {Number} longitude The longitude, in degrees
@@ -3625,8 +3653,7 @@ define('Core/AxisAlignedBoundingBox',[
 
         //If center was not defined, compute it.
         if (!defined(center)) {
-            center = Cartesian3.add(this.minimum, this.maximum, new Cartesian3());
-            Cartesian3.multiplyByScalar(center, 0.5, center);
+            center = Cartesian3.midpoint(this.minimum, this.maximum, new Cartesian3());
         } else {
             center = Cartesian3.clone(center);
         }
@@ -3695,8 +3722,7 @@ define('Core/AxisAlignedBoundingBox',[
         maximum.y = maximumY;
         maximum.z = maximumZ;
 
-        var center = Cartesian3.add(minimum, maximum, result.center);
-        Cartesian3.multiplyByScalar(center, 0.5, center);
+        result.center = Cartesian3.midpoint(minimum, maximum, result.center);
 
         return result;
     };
@@ -7366,7 +7392,7 @@ define('Core/Matrix4',[
      *
      * @param {Matrix4} matrix The matrix to use.
      * @param {Cartesian3} translation The translation that replaces the translation of the provided matrix.
-     * @param {Cartesian4} result The object onto which to store the result.
+     * @param {Matrix4} result The object onto which to store the result.
      * @returns {Matrix4} The modified result parameter.
      */
     Matrix4.setTranslation = function(matrix, translation, result) {
@@ -7395,6 +7421,25 @@ define('Core/Matrix4',[
         result[15] = matrix[15];
 
         return result;
+    };
+
+    var scaleScratch = new Cartesian3();
+    /**
+     * Computes a new matrix that replaces the scale with the provided scale.  This assumes the matrix is an affine transformation
+     *
+     * @param {Matrix4} matrix The matrix to use.
+     * @param {Cartesian3} scale The scale that replaces the scale of the provided matrix.
+     * @param {Matrix4} result The object onto which to store the result.
+     * @returns {Matrix4} The modified result parameter.
+     */
+    Matrix4.setScale = function(matrix, scale, result) {
+                Check.typeOf.object('matrix', matrix);
+        Check.typeOf.object('scale', scale);
+        Check.typeOf.object('result', result);
+        
+        var existingScale = Matrix4.getScale(matrix, scaleScratch);
+        var newScale = Cartesian3.divideComponents(scale, existingScale, scaleScratch);
+        return Matrix4.multiplyByScale(matrix, newScale, result);
     };
 
     /**
@@ -8420,32 +8465,7 @@ define('Core/Matrix4',[
     Matrix4.inverse = function(matrix, result) {
                 Check.typeOf.object('matrix', matrix);
         Check.typeOf.object('result', result);
-        
-        // Special case for a zero scale matrix that can occur, for example,
-        // when a model's node has a [0, 0, 0] scale.
-        if (Matrix3.equalsEpsilon(Matrix4.getRotation(matrix, scratchInverseRotation), scratchMatrix3Zero, CesiumMath.EPSILON7) &&
-            Cartesian4.equals(Matrix4.getRow(matrix, 3, scratchBottomRow), scratchExpectedBottomRow)) {
-
-            result[0] = 0.0;
-            result[1] = 0.0;
-            result[2] = 0.0;
-            result[3] = 0.0;
-            result[4] = 0.0;
-            result[5] = 0.0;
-            result[6] = 0.0;
-            result[7] = 0.0;
-            result[8] = 0.0;
-            result[9] = 0.0;
-            result[10] = 0.0;
-            result[11] = 0.0;
-            result[12] = -matrix[12];
-            result[13] = -matrix[13];
-            result[14] = -matrix[14];
-            result[15] = 1.0;
-            return result;
-        }
-
-        //
+                //
         // Ported from:
         //   ftp://download.intel.com/design/PentiumIII/sml/24504301.pdf
         //
@@ -8517,7 +8537,31 @@ define('Core/Matrix4',[
         // calculate determinant
         var det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3;
 
-        if (Math.abs(det) < CesiumMath.EPSILON20) {
+        if (Math.abs(det) < CesiumMath.EPSILON21) {
+                // Special case for a zero scale matrix that can occur, for example,
+                // when a model's node has a [0, 0, 0] scale.
+                if (Matrix3.equalsEpsilon(Matrix4.getRotation(matrix, scratchInverseRotation), scratchMatrix3Zero, CesiumMath.EPSILON7) &&
+                Cartesian4.equals(Matrix4.getRow(matrix, 3, scratchBottomRow), scratchExpectedBottomRow)) {
+
+                result[0] = 0.0;
+                result[1] = 0.0;
+                result[2] = 0.0;
+                result[3] = 0.0;
+                result[4] = 0.0;
+                result[5] = 0.0;
+                result[6] = 0.0;
+                result[7] = 0.0;
+                result[8] = 0.0;
+                result[9] = 0.0;
+                result[10] = 0.0;
+                result[11] = 0.0;
+                result[12] = -matrix[12];
+                result[13] = -matrix[13];
+                result[14] = -matrix[14];
+                result[15] = 1.0;
+                return result;
+            }
+
             throw new RuntimeError('matrix is not invertible because its determinate is zero.');
         }
 
@@ -9864,7 +9908,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -10135,7 +10179,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -10293,7 +10337,7 @@ define('Core/BoundingSphere',[
         maxBoxPt.y = yMax.y;
         maxBoxPt.z = zMax.z;
 
-        var naiveCenter = Cartesian3.multiplyByScalar(Cartesian3.add(minBoxPt, maxBoxPt, fromPointsScratch), 0.5, fromPointsNaiveCenterScratch);
+        var naiveCenter = Cartesian3.midpoint(minBoxPt, maxBoxPt, fromPointsNaiveCenterScratch);
 
         // Begin 2nd pass to find naive radius and modify the ritter sphere.
         var naiveRadius = 0;
@@ -10355,9 +10399,7 @@ define('Core/BoundingSphere',[
             result = new BoundingSphere();
         }
 
-        var center = result.center;
-        Cartesian3.add(corner, oppositeCorner, center);
-        Cartesian3.multiplyByScalar(center, 0.5, center);
+        var center = Cartesian3.midpoint(corner, oppositeCorner, result.center);
         result.radius = Cartesian3.distance(center, oppositeCorner);
         return result;
     };
@@ -17298,7 +17340,9 @@ define('Core/FeatureDetection',[
             //we still need to use it if it exists in order to support browsers
             //that rely on it, such as the Windows WebBrowser control which defines
             //PointerEvent but sets navigator.pointerEnabled to false.
-            hasPointerEvents = typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
+
+            //Firefox disabled because of https://github.com/AnalyticalGraphicsInc/cesium/issues/6372
+            hasPointerEvents = !isFirefox() && typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
         }
         return hasPointerEvents;
     }
@@ -17619,7 +17663,8 @@ define('Core/isCrossOriginUrl',[
         var protocol = a.protocol;
 
         a.href = url;
-        a.href = a.href; // IE only absolutizes href on get, not set
+        // IE only absolutizes href on get, not set
+        a.href = a.href; // eslint-disable-line no-self-assign
 
         return protocol !== a.protocol || host !== a.host;
     }
@@ -21076,11 +21121,11 @@ define('Core/Resource',[
             xhr.withCredentials = true;
         }
 
+        xhr.open(method, url, true);
+
         if (defined(overrideMimeType) && defined(xhr.overrideMimeType)) {
             xhr.overrideMimeType(overrideMimeType);
         }
-
-        xhr.open(method, url, true);
 
         if (defined(headers)) {
             for (var key in headers) {
@@ -21629,7 +21674,9 @@ define('Core/buildModuleUrl',[
             a = document.createElement('a');
         }
         a.href = url;
-        a.href = a.href; // IE only absolutizes href on get, not set
+
+        // IE only absolutizes href on get, not set
+        a.href = a.href; // eslint-disable-line no-self-assign
         return a.href;
     }
 
@@ -23402,7 +23449,7 @@ define('Core/Transforms',[
      * @returns {Matrix3} The modified result parameter or a new Matrix3 instance if none was provided.
      *
      * @example
-     * //Set the view to in the inertial frame.
+     * //Set the view to the inertial frame.
      * scene.postUpdate.addEventListener(function(scene, time) {
      *    var now = Cesium.JulianDate.now();
      *    var offset = Cesium.Matrix4.multiplyByPoint(camera.transform, camera.position, new Cesium.Cartesian3());
@@ -23534,12 +23581,11 @@ define('Core/Transforms',[
      *
      * @example
      * scene.postUpdate.addEventListener(function(scene, time) {
+     *   // View in ICRF.
      *   var icrfToFixed = Cesium.Transforms.computeIcrfToFixedMatrix(time);
      *   if (Cesium.defined(icrfToFixed)) {
-     *     var offset = Cesium.Matrix4.multiplyByPoint(camera.transform, camera.position, new Cesium.Cartesian3());
-     *     var transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed)
-     *     var inverseTransform = Cesium.Matrix4.inverseTransformation(transform, new Cesium.Matrix4());
-     *     Cesium.Matrix4.multiplyByPoint(inverseTransform, offset, offset);
+     *     var offset = Cesium.Cartesian3.clone(camera.position);
+     *     var transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed);
      *     camera.lookAtTransform(transform, offset);
      *   }
      * });
@@ -23867,6 +23913,7 @@ define('Core/EllipsoidTangentPlane',[
         './Cartesian2',
         './Cartesian3',
         './Cartesian4',
+        './Check',
         './defaultValue',
         './defined',
         './defineProperties',
@@ -23882,6 +23929,7 @@ define('Core/EllipsoidTangentPlane',[
         Cartesian2,
         Cartesian3,
         Cartesian4,
+        Check,
         defaultValue,
         defined,
         defineProperties,
@@ -23908,9 +23956,7 @@ define('Core/EllipsoidTangentPlane',[
      * @exception {DeveloperError} origin must not be at the center of the ellipsoid.
      */
     function EllipsoidTangentPlane(origin, ellipsoid) {
-                if (!defined(origin)) {
-            throw new DeveloperError('origin is required.');
-        }
+                Check.defined('origin', origin);
         
         ellipsoid = defaultValue(ellipsoid, Ellipsoid.WGS84);
         origin = ellipsoid.scaleToGeodeticSurface(origin);
@@ -24006,13 +24052,11 @@ define('Core/EllipsoidTangentPlane',[
      * Creates a new instance from the provided ellipsoid and the center
      * point of the provided Cartesians.
      *
-     * @param {Ellipsoid} ellipsoid The ellipsoid to use.
      * @param {Cartesian3} cartesians The list of positions surrounding the center point.
+     * @param {Ellipsoid} [ellipsoid=Ellipsoid.WGS84] The ellipsoid to use.
      */
     EllipsoidTangentPlane.fromPoints = function(cartesians, ellipsoid) {
-                if (!defined(cartesians)) {
-            throw new DeveloperError('cartesians is required.');
-        }
+                Check.defined('cartesians', cartesians);
         
         var box = AxisAlignedBoundingBox.fromPoints(cartesians, tmp);
         return new EllipsoidTangentPlane(box.center, ellipsoid);
@@ -24029,9 +24073,7 @@ define('Core/EllipsoidTangentPlane',[
      * @returns {Cartesian2} The modified result parameter or a new Cartesian2 instance if none was provided. Undefined if there is no intersection point
      */
     EllipsoidTangentPlane.prototype.projectPointOntoPlane = function(cartesian, result) {
-                if (!defined(cartesian)) {
-            throw new DeveloperError('cartesian is required.');
-        }
+                Check.defined('cartesian', cartesian);
         
         var ray = scratchProjectPointOntoPlaneRay;
         ray.origin = cartesian;
@@ -24069,9 +24111,7 @@ define('Core/EllipsoidTangentPlane',[
      * @returns {Cartesian2[]} The modified result parameter or a new array of Cartesian2 instances if none was provided.
      */
     EllipsoidTangentPlane.prototype.projectPointsOntoPlane = function(cartesians, result) {
-                if (!defined(cartesians)) {
-            throw new DeveloperError('cartesians is required.');
-        }
+                Check.defined('cartesians', cartesians);
         
         if (!defined(result)) {
             result = [];
@@ -24098,9 +24138,7 @@ define('Core/EllipsoidTangentPlane',[
      * @returns {Cartesian2} The modified result parameter or a new Cartesian2 instance if none was provided.
      */
     EllipsoidTangentPlane.prototype.projectPointToNearestOnPlane = function(cartesian, result) {
-                if (!defined(cartesian)) {
-            throw new DeveloperError('cartesian is required.');
-        }
+                Check.defined('cartesian', cartesian);
         
         if (!defined(result)) {
             result = new Cartesian2();
@@ -24135,9 +24173,7 @@ define('Core/EllipsoidTangentPlane',[
      * @returns {Cartesian2[]} The modified result parameter or a new array of Cartesian2 instances if none was provided. This will have the same length as <code>cartesians</code>.
      */
     EllipsoidTangentPlane.prototype.projectPointsToNearestOnPlane = function(cartesians, result) {
-                if (!defined(cartesians)) {
-            throw new DeveloperError('cartesians is required.');
-        }
+                Check.defined('cartesians', cartesians);
         
         if (!defined(result)) {
             result = [];
@@ -24153,22 +24189,17 @@ define('Core/EllipsoidTangentPlane',[
 
     var projectPointsOntoEllipsoidScratch = new Cartesian3();
     /**
-     * Computes the projection of the provided 2D positions onto the 3D ellipsoid.
+     * Computes the projection of the provided 2D position onto the 3D ellipsoid.
      *
-     * @param {Cartesian2[]} cartesians The array of points to project.
-     * @param {Cartesian3[]} [result] The array of Cartesian3 instances onto which to store results.
-     * @returns {Cartesian3[]} The modified result parameter or a new array of Cartesian3 instances if none was provided.
+     * @param {Cartesian2} cartesian The points to project.
+     * @param {Cartesian3} [result] The Cartesian3 instance to store result.
+     * @returns {Cartesian3} The modified result parameter or a new Cartesian3 instance if none was provided.
      */
-    EllipsoidTangentPlane.prototype.projectPointsOntoEllipsoid = function(cartesians, result) {
-                if (!defined(cartesians)) {
-            throw new DeveloperError('cartesians is required.');
-        }
+    EllipsoidTangentPlane.prototype.projectPointOntoEllipsoid = function(cartesian, result) {
+                Check.defined('cartesian', cartesian);
         
-        var length = cartesians.length;
         if (!defined(result)) {
-            result = new Array(length);
-        } else {
-            result.length = length;
+            result = new Cartesian3();
         }
 
         var ellipsoid = this._ellipsoid;
@@ -24177,16 +24208,34 @@ define('Core/EllipsoidTangentPlane',[
         var yAxis = this._yAxis;
         var tmp = projectPointsOntoEllipsoidScratch;
 
+        Cartesian3.multiplyByScalar(xAxis, cartesian.x, tmp);
+        result = Cartesian3.add(origin, tmp, result);
+        Cartesian3.multiplyByScalar(yAxis, cartesian.y, tmp);
+        Cartesian3.add(result, tmp, result);
+        ellipsoid.scaleToGeocentricSurface(result, result);
+
+        return result;
+    };
+
+    /**
+     * Computes the projection of the provided 2D positions onto the 3D ellipsoid.
+     *
+     * @param {Cartesian2[]} cartesians The array of points to project.
+     * @param {Cartesian3[]} [result] The array of Cartesian3 instances onto which to store results.
+     * @returns {Cartesian3[]} The modified result parameter or a new array of Cartesian3 instances if none was provided.
+     */
+    EllipsoidTangentPlane.prototype.projectPointsOntoEllipsoid = function(cartesians, result) {
+                Check.defined('cartesians', cartesians);
+        
+        var length = cartesians.length;
+        if (!defined(result)) {
+            result = new Array(length);
+        } else {
+            result.length = length;
+        }
+
         for ( var i = 0; i < length; ++i) {
-            var position = cartesians[i];
-            Cartesian3.multiplyByScalar(xAxis, position.x, tmp);
-            if (!defined(result[i])) {
-                result[i] = new Cartesian3();
-            }
-            var point = Cartesian3.add(origin, tmp, result[i]);
-            Cartesian3.multiplyByScalar(yAxis, position.y, tmp);
-            Cartesian3.add(point, tmp, point);
-            ellipsoid.scaleToGeocentricSurface(point, point);
+            result[i] = this.projectPointOntoEllipsoid(cartesians[i], result[i]);
         }
 
         return result;

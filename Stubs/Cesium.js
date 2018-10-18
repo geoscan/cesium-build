@@ -149,6 +149,18 @@ define('Core/CompressedTextureBuffer', function() {
     return Cesium['CompressedTextureBuffer'];
 });
 
+define('Core/CoplanarPolygonGeometry', function() {
+    return Cesium['CoplanarPolygonGeometry'];
+});
+
+define('Core/CoplanarPolygonGeometryLibrary', function() {
+    return Cesium['CoplanarPolygonGeometryLibrary'];
+});
+
+define('Core/CoplanarPolygonOutlineGeometry', function() {
+    return Cesium['CoplanarPolygonOutlineGeometry'];
+});
+
 define('Core/CornerType', function() {
     return Cesium['CornerType'];
 });
@@ -637,6 +649,10 @@ define('Core/oneTimeWarning', function() {
     return Cesium['oneTimeWarning'];
 });
 
+define('Core/OpenCageGeocoderService', function() {
+    return Cesium['OpenCageGeocoderService'];
+});
+
 define('Core/OrientedBoundingBox', function() {
     return Cesium['OrientedBoundingBox'];
 });
@@ -985,6 +1001,10 @@ define('Core/WebGLConstants', function() {
     return Cesium['WebGLConstants'];
 });
 
+define('Core/webGLConstantToGlslType', function() {
+    return Cesium['webGLConstantToGlslType'];
+});
+
 define('Core/WebMercatorProjection', function() {
     return Cesium['WebMercatorProjection'];
 });
@@ -1175,6 +1195,10 @@ define('DataSources/GridMaterialProperty', function() {
 
 define('DataSources/GroundGeometryUpdater', function() {
     return Cesium['GroundGeometryUpdater'];
+});
+
+define('DataSources/heightReferenceOnEntityPropertyChanged', function() {
+    return Cesium['heightReferenceOnEntityPropertyChanged'];
 });
 
 define('DataSources/ImageMaterialProperty', function() {
@@ -1489,10 +1513,6 @@ define('Renderer/PassState', function() {
     return Cesium['PassState'];
 });
 
-define('Renderer/PickFramebuffer', function() {
-    return Cesium['PickFramebuffer'];
-});
-
 define('Renderer/PixelDatatype', function() {
     return Cesium['PixelDatatype'];
 });
@@ -1641,10 +1661,6 @@ define('Scene/Cesium3DTileBatchTable', function() {
     return Cesium['Cesium3DTileBatchTable'];
 });
 
-define('Scene/Cesium3DTileChildrenVisibility', function() {
-    return Cesium['Cesium3DTileChildrenVisibility'];
-});
-
 define('Scene/Cesium3DTileColorBlendMode', function() {
     return Cesium['Cesium3DTileColorBlendMode'];
 });
@@ -1687,6 +1703,10 @@ define('Scene/Cesium3DTileRefine', function() {
 
 define('Scene/Cesium3DTileset', function() {
     return Cesium['Cesium3DTileset'];
+});
+
+define('Scene/Cesium3DTilesetCache', function() {
+    return Cesium['Cesium3DTilesetCache'];
 });
 
 define('Scene/Cesium3DTilesetStatistics', function() {
@@ -1735,6 +1755,10 @@ define('Scene/ColorBlendMode', function() {
 
 define('Scene/Composite3DTileContent', function() {
     return Cesium['Composite3DTileContent'];
+});
+
+define('Scene/computeFlyToLocationForRectangle', function() {
+    return Cesium['computeFlyToLocationForRectangle'];
 });
 
 define('Scene/ConditionsExpression', function() {
@@ -2089,6 +2113,18 @@ define('Scene/PickDepth', function() {
     return Cesium['PickDepth'];
 });
 
+define('Scene/PickDepthFramebuffer', function() {
+    return Cesium['PickDepthFramebuffer'];
+});
+
+define('Scene/PickFramebuffer', function() {
+    return Cesium['PickFramebuffer'];
+});
+
+define('Scene/PointCloud', function() {
+    return Cesium['PointCloud'];
+});
+
 define('Scene/PointCloud3DTileContent', function() {
     return Cesium['PointCloud3DTileContent'];
 });
@@ -2163,6 +2199,14 @@ define('Scene/PrimitivePipeline', function() {
 
 define('Scene/PrimitiveState', function() {
     return Cesium['PrimitiveState'];
+});
+
+define('Scene/processModelMaterialsCommon', function() {
+    return Cesium['processModelMaterialsCommon'];
+});
+
+define('Scene/processPbrMaterials', function() {
+    return Cesium['processPbrMaterials'];
 });
 
 define('Scene/QuadtreeOccluders', function() {
@@ -2317,6 +2361,10 @@ define('Scene/TimeDynamicImagery', function() {
     return Cesium['TimeDynamicImagery'];
 });
 
+define('Scene/TimeDynamicPointCloud', function() {
+    return Cesium['TimeDynamicPointCloud'];
+});
+
 define('Scene/TweenCollection', function() {
     return Cesium['TweenCollection'];
 });
@@ -2355,6 +2403,10 @@ define('Scene/Vector3DTilePrimitive', function() {
 
 define('Scene/VerticalOrigin', function() {
     return Cesium['VerticalOrigin'];
+});
+
+define('Scene/View', function() {
+    return Cesium['View'];
 });
 
 define('Scene/ViewportQuad', function() {
@@ -3173,6 +3225,10 @@ define('ThirdParty/earcut-2.1.1', function() {
     return Cesium['earcut-2.1.1'];
 });
 
+define('ThirdParty/GltfPipeline/addBuffer', function() {
+    return Cesium['addBuffer'];
+});
+
 define('ThirdParty/GltfPipeline/addDefaults', function() {
     return Cesium['addDefaults'];
 });
@@ -3193,10 +3249,6 @@ define('ThirdParty/GltfPipeline/addToArray', function() {
     return Cesium['addToArray'];
 });
 
-define('ThirdParty/GltfPipeline/byteLengthForComponentType', function() {
-    return Cesium['byteLengthForComponentType'];
-});
-
 define('ThirdParty/GltfPipeline/findAccessorMinMax', function() {
     return Cesium['findAccessorMinMax'];
 });
@@ -3209,28 +3261,32 @@ define('ThirdParty/GltfPipeline/getAccessorByteStride', function() {
     return Cesium['getAccessorByteStride'];
 });
 
-define('ThirdParty/GltfPipeline/getJointCountForMaterials', function() {
-    return Cesium['getJointCountForMaterials'];
+define('ThirdParty/GltfPipeline/getComponentReader', function() {
+    return Cesium['getComponentReader'];
 });
 
-define('ThirdParty/GltfPipeline/glslTypeToWebGLConstant', function() {
-    return Cesium['glslTypeToWebGLConstant'];
+define('ThirdParty/GltfPipeline/hasExtension', function() {
+    return Cesium['hasExtension'];
+});
+
+define('ThirdParty/GltfPipeline/moveTechniqueRenderStates', function() {
+    return Cesium['moveTechniqueRenderStates'];
+});
+
+define('ThirdParty/GltfPipeline/moveTechniquesToExtension', function() {
+    return Cesium['moveTechniquesToExtension'];
 });
 
 define('ThirdParty/GltfPipeline/numberOfComponentsForType', function() {
     return Cesium['numberOfComponentsForType'];
 });
 
-define('ThirdParty/GltfPipeline/parseBinaryGltf', function() {
-    return Cesium['parseBinaryGltf'];
+define('ThirdParty/GltfPipeline/parseGlb', function() {
+    return Cesium['parseGlb'];
 });
 
-define('ThirdParty/GltfPipeline/processModelMaterialsCommon', function() {
-    return Cesium['processModelMaterialsCommon'];
-});
-
-define('ThirdParty/GltfPipeline/processPbrMetallicRoughness', function() {
-    return Cesium['processPbrMetallicRoughness'];
+define('ThirdParty/GltfPipeline/readAccessorPacked', function() {
+    return Cesium['readAccessorPacked'];
 });
 
 define('ThirdParty/GltfPipeline/removeExtensionsRequired', function() {
@@ -3245,16 +3301,16 @@ define('ThirdParty/GltfPipeline/removePipelineExtras', function() {
     return Cesium['removePipelineExtras'];
 });
 
-define('ThirdParty/GltfPipeline/techniqueParameterForSemantic', function() {
-    return Cesium['techniqueParameterForSemantic'];
+define('ThirdParty/GltfPipeline/removeUnusedElements', function() {
+    return Cesium['removeUnusedElements'];
+});
+
+define('ThirdParty/GltfPipeline/updateAccessorComponentTypes', function() {
+    return Cesium['updateAccessorComponentTypes'];
 });
 
 define('ThirdParty/GltfPipeline/updateVersion', function() {
     return Cesium['updateVersion'];
-});
-
-define('ThirdParty/GltfPipeline/webGLConstantToGlslType', function() {
-    return Cesium['webGLConstantToGlslType'];
 });
 
 define('ThirdParty/google-earth-dbroot-parser', function() {
@@ -3297,6 +3353,10 @@ define('ThirdParty/protobuf-minimal', function() {
     return Cesium['protobuf-minimal'];
 });
 
+define('ThirdParty/purify', function() {
+    return Cesium['purify'];
+});
+
 define('ThirdParty/quickselect', function() {
     return Cesium['quickselect'];
 });
@@ -3327,10 +3387,6 @@ define('ThirdParty/Uri', function() {
 
 define('ThirdParty/when', function() {
     return Cesium['when'];
-});
-
-define('ThirdParty/xss', function() {
-    return Cesium['xss'];
 });
 
 define('ThirdParty/zip', function() {
@@ -3431,6 +3487,10 @@ define('Widgets/InfoBox/InfoBox', function() {
 
 define('Widgets/InfoBox/InfoBoxViewModel', function() {
     return Cesium['InfoBoxViewModel'];
+});
+
+define('Widgets/InspectorShared', function() {
+    return Cesium['InspectorShared'];
 });
 
 define('Widgets/NavigationHelpButton/NavigationHelpButton', function() {
