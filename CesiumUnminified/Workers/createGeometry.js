@@ -4728,6 +4728,27 @@ define('Core/Matrix3',[
         return result;
     };
 
+    var UNIT = new Cartesian3(1, 1, 1);
+    var scaleVector = new Cartesian3();
+
+    /**
+     * Factors rotation matrix from arbitrary Matrix3 by dividing components by scale
+     *
+     * @param {Matrix3} rotation-scale matrix
+     * @param {Matrix3} result rotation matrix with unit scale
+     * @returns {Matrix3} The modified result parameter.
+     */
+    Matrix3.getRotation = function(matrix, result) {
+        Matrix3.multiplyByScale(
+            matrix,
+            Cartesian3.divideComponents(
+                UNIT, Matrix3.getScale(matrix, scaleVector), scaleVector
+            ),
+            result
+        );
+        return result;
+    };
+
     function computeFrobeniusNorm(matrix) {
         var norm = 0.0;
         for (var i = 0; i < 9; ++i) {
@@ -8181,10 +8202,6 @@ define('Core/Matrix4',[
         return result;
     };
 
-
-    var UNIT = new Cartesian3(1, 1, 1);
-    var scratchScale = new Cartesian3();
-
     /**
      * Gets the upper left 3x3 rotation matrix of the provided matrix, assuming the matrix is a affine transformation matrix.
      *
@@ -8220,13 +8237,6 @@ define('Core/Matrix4',[
         result[6] = matrix[8];
         result[7] = matrix[9];
         result[8] = matrix[10];
-        Matrix3.multiplyByScale(
-            result,
-            Cartesian3.divideComponents(
-                UNIT, Matrix3.getScale(result, scratchScale), scratchScale
-            ),
-            result
-        )
         return result;
     };
 
