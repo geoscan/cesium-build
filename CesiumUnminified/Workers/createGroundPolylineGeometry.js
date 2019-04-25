@@ -1733,6 +1733,605 @@ define('Core/deprecationWarning',[
     return deprecationWarning;
 });
 
+define('Core/Fullscreen',[
+        './defined',
+        './defineProperties'
+    ], function(
+        defined,
+        defineProperties) {
+    'use strict';
+
+    var _supportsFullscreen;
+    var _names = {
+        requestFullscreen : undefined,
+        exitFullscreen : undefined,
+        fullscreenEnabled : undefined,
+        fullscreenElement : undefined,
+        fullscreenchange : undefined,
+        fullscreenerror : undefined
+    };
+
+    /**
+     * Browser-independent functions for working with the standard fullscreen API.
+     *
+     * @exports Fullscreen
+     * @namespace
+     *
+     * @see {@link http://dvcs.w3.org/hg/fullscreen/raw-file/tip/Overview.html|W3C Fullscreen Living Specification}
+     */
+    var Fullscreen = {};
+
+    defineProperties(Fullscreen, {
+        /**
+         * The element that is currently fullscreen, if any.  To simply check if the
+         * browser is in fullscreen mode or not, use {@link Fullscreen#fullscreen}.
+         * @memberof Fullscreen
+         * @type {Object}
+         * @readonly
+         */
+        element : {
+            get : function() {
+                if (!Fullscreen.supportsFullscreen()) {
+                    return undefined;
+                }
+
+                return document[_names.fullscreenElement];
+            }
+        },
+
+        /**
+         * The name of the event on the document that is fired when fullscreen is
+         * entered or exited.  This event name is intended for use with addEventListener.
+         * In your event handler, to determine if the browser is in fullscreen mode or not,
+         * use {@link Fullscreen#fullscreen}.
+         * @memberof Fullscreen
+         * @type {String}
+         * @readonly
+         */
+        changeEventName : {
+            get : function() {
+                if (!Fullscreen.supportsFullscreen()) {
+                    return undefined;
+                }
+
+                return _names.fullscreenchange;
+            }
+        },
+
+        /**
+         * The name of the event that is fired when a fullscreen error
+         * occurs.  This event name is intended for use with addEventListener.
+         * @memberof Fullscreen
+         * @type {String}
+         * @readonly
+         */
+        errorEventName : {
+            get : function() {
+                if (!Fullscreen.supportsFullscreen()) {
+                    return undefined;
+                }
+
+                return _names.fullscreenerror;
+            }
+        },
+
+        /**
+         * Determine whether the browser will allow an element to be made fullscreen, or not.
+         * For example, by default, iframes cannot go fullscreen unless the containing page
+         * adds an "allowfullscreen" attribute (or prefixed equivalent).
+         * @memberof Fullscreen
+         * @type {Boolean}
+         * @readonly
+         */
+        enabled : {
+            get : function() {
+                if (!Fullscreen.supportsFullscreen()) {
+                    return undefined;
+                }
+
+                return document[_names.fullscreenEnabled];
+            }
+        },
+
+        /**
+         * Determines if the browser is currently in fullscreen mode.
+         * @memberof Fullscreen
+         * @type {Boolean}
+         * @readonly
+         */
+        fullscreen : {
+            get : function() {
+                if (!Fullscreen.supportsFullscreen()) {
+                    return undefined;
+                }
+
+                return Fullscreen.element !== null;
+            }
+        }
+    });
+
+    /**
+     * Detects whether the browser supports the standard fullscreen API.
+     *
+     * @returns {Boolean} <code>true</code> if the browser supports the standard fullscreen API,
+     * <code>false</code> otherwise.
+     */
+    Fullscreen.supportsFullscreen = function() {
+        if (defined(_supportsFullscreen)) {
+            return _supportsFullscreen;
+        }
+
+        _supportsFullscreen = false;
+
+        var body = document.body;
+        if (typeof body.requestFullscreen === 'function') {
+            // go with the unprefixed, standard set of names
+            _names.requestFullscreen = 'requestFullscreen';
+            _names.exitFullscreen = 'exitFullscreen';
+            _names.fullscreenEnabled = 'fullscreenEnabled';
+            _names.fullscreenElement = 'fullscreenElement';
+            _names.fullscreenchange = 'fullscreenchange';
+            _names.fullscreenerror = 'fullscreenerror';
+            _supportsFullscreen = true;
+            return _supportsFullscreen;
+        }
+
+        //check for the correct combination of prefix plus the various names that browsers use
+        var prefixes = ['webkit', 'moz', 'o', 'ms', 'khtml'];
+        var name;
+        for (var i = 0, len = prefixes.length; i < len; ++i) {
+            var prefix = prefixes[i];
+
+            // casing of Fullscreen differs across browsers
+            name = prefix + 'RequestFullscreen';
+            if (typeof body[name] === 'function') {
+                _names.requestFullscreen = name;
+                _supportsFullscreen = true;
+            } else {
+                name = prefix + 'RequestFullScreen';
+                if (typeof body[name] === 'function') {
+                    _names.requestFullscreen = name;
+                    _supportsFullscreen = true;
+                }
+            }
+
+            // disagreement about whether it's "exit" as per spec, or "cancel"
+            name = prefix + 'ExitFullscreen';
+            if (typeof document[name] === 'function') {
+                _names.exitFullscreen = name;
+            } else {
+                name = prefix + 'CancelFullScreen';
+                if (typeof document[name] === 'function') {
+                    _names.exitFullscreen = name;
+                }
+            }
+
+            // casing of Fullscreen differs across browsers
+            name = prefix + 'FullscreenEnabled';
+            if (document[name] !== undefined) {
+                _names.fullscreenEnabled = name;
+            } else {
+                name = prefix + 'FullScreenEnabled';
+                if (document[name] !== undefined) {
+                    _names.fullscreenEnabled = name;
+                }
+            }
+
+            // casing of Fullscreen differs across browsers
+            name = prefix + 'FullscreenElement';
+            if (document[name] !== undefined) {
+                _names.fullscreenElement = name;
+            } else {
+                name = prefix + 'FullScreenElement';
+                if (document[name] !== undefined) {
+                    _names.fullscreenElement = name;
+                }
+            }
+
+            // thankfully, event names are all lowercase per spec
+            name = prefix + 'fullscreenchange';
+            // event names do not have 'on' in the front, but the property on the document does
+            if (document['on' + name] !== undefined) {
+                //except on IE
+                if (prefix === 'ms') {
+                    name = 'MSFullscreenChange';
+                }
+                _names.fullscreenchange = name;
+            }
+
+            name = prefix + 'fullscreenerror';
+            if (document['on' + name] !== undefined) {
+                //except on IE
+                if (prefix === 'ms') {
+                    name = 'MSFullscreenError';
+                }
+                _names.fullscreenerror = name;
+            }
+        }
+
+        return _supportsFullscreen;
+    };
+
+    /**
+     * Asynchronously requests the browser to enter fullscreen mode on the given element.
+     * If fullscreen mode is not supported by the browser, does nothing.
+     *
+     * @param {Object} element The HTML element which will be placed into fullscreen mode.
+     * @param {HMDVRDevice} [vrDevice] The VR device.
+     *
+     * @example
+     * // Put the entire page into fullscreen.
+     * Cesium.Fullscreen.requestFullscreen(document.body)
+     *
+     * // Place only the Cesium canvas into fullscreen.
+     * Cesium.Fullscreen.requestFullscreen(scene.canvas)
+     */
+    Fullscreen.requestFullscreen = function(element, vrDevice) {
+        if (!Fullscreen.supportsFullscreen()) {
+            return;
+        }
+
+        element[_names.requestFullscreen]({ vrDisplay: vrDevice });
+    };
+
+    /**
+     * Asynchronously exits fullscreen mode.  If the browser is not currently
+     * in fullscreen, or if fullscreen mode is not supported by the browser, does nothing.
+     */
+    Fullscreen.exitFullscreen = function() {
+        if (!Fullscreen.supportsFullscreen()) {
+            return;
+        }
+
+        document[_names.exitFullscreen]();
+    };
+
+    return Fullscreen;
+});
+
+define('Core/FeatureDetection',[
+        './defaultValue',
+        './defined',
+        './defineProperties',
+        './DeveloperError',
+        './Fullscreen',
+        '../ThirdParty/when'
+    ], function(
+        defaultValue,
+        defined,
+        defineProperties,
+        DeveloperError,
+        Fullscreen,
+        when) {
+    'use strict';
+    /*global CanvasPixelArray*/
+
+    var theNavigator;
+    if (typeof navigator !== 'undefined') {
+        theNavigator = navigator;
+    } else {
+        theNavigator = {};
+    }
+
+    function extractVersion(versionString) {
+        var parts = versionString.split('.');
+        for (var i = 0, len = parts.length; i < len; ++i) {
+            parts[i] = parseInt(parts[i], 10);
+        }
+        return parts;
+    }
+
+    var isChromeResult;
+    var chromeVersionResult;
+    function isChrome() {
+        if (!defined(isChromeResult)) {
+            isChromeResult = false;
+            // Edge contains Chrome in the user agent too
+            if (!isEdge()) {
+                var fields = (/ Chrome\/([\.0-9]+)/).exec(theNavigator.userAgent);
+                if (fields !== null) {
+                    isChromeResult = true;
+                    chromeVersionResult = extractVersion(fields[1]);
+                }
+            }
+        }
+
+        return isChromeResult;
+    }
+
+    function chromeVersion() {
+        return isChrome() && chromeVersionResult;
+    }
+
+    var isSafariResult;
+    var safariVersionResult;
+    function isSafari() {
+        if (!defined(isSafariResult)) {
+            isSafariResult = false;
+
+            // Chrome and Edge contain Safari in the user agent too
+            if (!isChrome() && !isEdge() && (/ Safari\/[\.0-9]+/).test(theNavigator.userAgent)) {
+                var fields = (/ Version\/([\.0-9]+)/).exec(theNavigator.userAgent);
+                if (fields !== null) {
+                    isSafariResult = true;
+                    safariVersionResult = extractVersion(fields[1]);
+                }
+            }
+        }
+
+        return isSafariResult;
+    }
+
+    function safariVersion() {
+        return isSafari() && safariVersionResult;
+    }
+
+    var isWebkitResult;
+    var webkitVersionResult;
+    function isWebkit() {
+        if (!defined(isWebkitResult)) {
+            isWebkitResult = false;
+
+            var fields = (/ AppleWebKit\/([\.0-9]+)(\+?)/).exec(theNavigator.userAgent);
+            if (fields !== null) {
+                isWebkitResult = true;
+                webkitVersionResult = extractVersion(fields[1]);
+                webkitVersionResult.isNightly = !!fields[2];
+            }
+        }
+
+        return isWebkitResult;
+    }
+
+    function webkitVersion() {
+        return isWebkit() && webkitVersionResult;
+    }
+
+    var isInternetExplorerResult;
+    var internetExplorerVersionResult;
+    function isInternetExplorer() {
+        if (!defined(isInternetExplorerResult)) {
+            isInternetExplorerResult = false;
+
+            var fields;
+            if (theNavigator.appName === 'Microsoft Internet Explorer') {
+                fields = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(theNavigator.userAgent);
+                if (fields !== null) {
+                    isInternetExplorerResult = true;
+                    internetExplorerVersionResult = extractVersion(fields[1]);
+                }
+            } else if (theNavigator.appName === 'Netscape') {
+                fields = /Trident\/.*rv:([0-9]{1,}[\.0-9]{0,})/.exec(theNavigator.userAgent);
+                if (fields !== null) {
+                    isInternetExplorerResult = true;
+                    internetExplorerVersionResult = extractVersion(fields[1]);
+                }
+            }
+        }
+        return isInternetExplorerResult;
+    }
+
+    function internetExplorerVersion() {
+        return isInternetExplorer() && internetExplorerVersionResult;
+    }
+
+    var isEdgeResult;
+    var edgeVersionResult;
+    function isEdge() {
+        if (!defined(isEdgeResult)) {
+            isEdgeResult = false;
+            var fields = (/ Edge\/([\.0-9]+)/).exec(theNavigator.userAgent);
+            if (fields !== null) {
+                isEdgeResult = true;
+                edgeVersionResult = extractVersion(fields[1]);
+            }
+        }
+        return isEdgeResult;
+    }
+
+    function edgeVersion() {
+        return isEdge() && edgeVersionResult;
+    }
+
+    var isFirefoxResult;
+    var firefoxVersionResult;
+    function isFirefox() {
+        if (!defined(isFirefoxResult)) {
+            isFirefoxResult = false;
+
+            var fields = /Firefox\/([\.0-9]+)/.exec(theNavigator.userAgent);
+            if (fields !== null) {
+                isFirefoxResult = true;
+                firefoxVersionResult = extractVersion(fields[1]);
+            }
+        }
+        return isFirefoxResult;
+    }
+
+    var isWindowsResult;
+    function isWindows() {
+        if (!defined(isWindowsResult)) {
+            isWindowsResult = /Windows/i.test(theNavigator.appVersion);
+        }
+        return isWindowsResult;
+    }
+
+    function firefoxVersion() {
+        return isFirefox() && firefoxVersionResult;
+    }
+
+    var hasPointerEvents;
+    function supportsPointerEvents() {
+        if (!defined(hasPointerEvents)) {
+            //While navigator.pointerEnabled is deprecated in the W3C specification
+            //we still need to use it if it exists in order to support browsers
+            //that rely on it, such as the Windows WebBrowser control which defines
+            //PointerEvent but sets navigator.pointerEnabled to false.
+
+            //Firefox disabled because of https://github.com/AnalyticalGraphicsInc/cesium/issues/6372
+            hasPointerEvents = !isFirefox() && typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
+        }
+        return hasPointerEvents;
+    }
+
+    var imageRenderingValueResult;
+    var supportsImageRenderingPixelatedResult;
+    function supportsImageRenderingPixelated() {
+        if (!defined(supportsImageRenderingPixelatedResult)) {
+            var canvas = document.createElement('canvas');
+            canvas.setAttribute('style',
+                                'image-rendering: -moz-crisp-edges;' +
+                                'image-rendering: pixelated;');
+            //canvas.style.imageRendering will be undefined, null or an empty string on unsupported browsers.
+            var tmp = canvas.style.imageRendering;
+            supportsImageRenderingPixelatedResult = defined(tmp) && tmp !== '';
+            if (supportsImageRenderingPixelatedResult) {
+                imageRenderingValueResult = tmp;
+            }
+        }
+        return supportsImageRenderingPixelatedResult;
+    }
+
+    function imageRenderingValue() {
+        return supportsImageRenderingPixelated() ? imageRenderingValueResult : undefined;
+    }
+
+    function supportsWebP() {
+                if (!supportsWebP.initialized) {
+            throw new DeveloperError('You must call FeatureDetection.supportsWebP.initialize and wait for the promise to resolve before calling FeatureDetection.supportsWebP');
+        }
+                return supportsWebP._result;
+    }
+    supportsWebP._promise = undefined;
+    supportsWebP._result = undefined;
+    supportsWebP.initialize = function() {
+        // From https://developers.google.com/speed/webp/faq#how_can_i_detect_browser_support_for_webp
+        if (defined(supportsWebP._promise)) {
+            return supportsWebP._promise;
+        }
+
+        var supportsWebPDeferred = when.defer();
+        supportsWebP._promise = supportsWebPDeferred.promise;
+        if (isEdge()) {
+            // Edge's WebP support with WebGL is incomplete.
+            // See bug report: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/19221241/
+            supportsWebP._result = false;
+            supportsWebPDeferred.resolve(supportsWebP._result);
+            return supportsWebPDeferred.promise;
+        }
+
+        var image = new Image();
+        image.onload = function () {
+            supportsWebP._result = (image.width > 0) && (image.height > 0);
+            supportsWebPDeferred.resolve(supportsWebP._result);
+        };
+
+        image.onerror = function () {
+            supportsWebP._result = false;
+            supportsWebPDeferred.resolve(supportsWebP._result);
+        };
+
+        image.src = 'data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA';
+
+        return supportsWebPDeferred.promise;
+    };
+    defineProperties(supportsWebP, {
+        initialized: {
+            get: function() {
+                return defined(supportsWebP._result);
+            }
+        }
+    });
+
+    var typedArrayTypes = [];
+    if (typeof ArrayBuffer !== 'undefined') {
+        typedArrayTypes.push(Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array);
+
+        if (typeof Uint8ClampedArray !== 'undefined') {
+            typedArrayTypes.push(Uint8ClampedArray);
+        }
+
+        if (typeof CanvasPixelArray !== 'undefined') {
+            typedArrayTypes.push(CanvasPixelArray);
+        }
+    }
+
+    /**
+     * A set of functions to detect whether the current browser supports
+     * various features.
+     *
+     * @exports FeatureDetection
+     */
+    var FeatureDetection = {
+        isChrome : isChrome,
+        chromeVersion : chromeVersion,
+        isSafari : isSafari,
+        safariVersion : safariVersion,
+        isWebkit : isWebkit,
+        webkitVersion : webkitVersion,
+        isInternetExplorer : isInternetExplorer,
+        internetExplorerVersion : internetExplorerVersion,
+        isEdge : isEdge,
+        edgeVersion : edgeVersion,
+        isFirefox : isFirefox,
+        firefoxVersion : firefoxVersion,
+        isWindows : isWindows,
+        hardwareConcurrency : defaultValue(theNavigator.hardwareConcurrency, 3),
+        supportsPointerEvents : supportsPointerEvents,
+        supportsImageRenderingPixelated: supportsImageRenderingPixelated,
+        supportsWebP: supportsWebP,
+        imageRenderingValue: imageRenderingValue,
+        typedArrayTypes: typedArrayTypes
+    };
+
+    /**
+     * Detects whether the current browser supports the full screen standard.
+     *
+     * @returns {Boolean} true if the browser supports the full screen standard, false if not.
+     *
+     * @see Fullscreen
+     * @see {@link http://dvcs.w3.org/hg/fullscreen/raw-file/tip/Overview.html|W3C Fullscreen Living Specification}
+     */
+    FeatureDetection.supportsFullscreen = function() {
+        return Fullscreen.supportsFullscreen();
+    };
+
+    /**
+     * Detects whether the current browser supports typed arrays.
+     *
+     * @returns {Boolean} true if the browser supports typed arrays, false if not.
+     *
+     * @see {@link http://www.khronos.org/registry/typedarray/specs/latest/|Typed Array Specification}
+     */
+    FeatureDetection.supportsTypedArrays = function() {
+        return typeof ArrayBuffer !== 'undefined';
+    };
+
+    /**
+     * Detects whether the current browser supports Web Workers.
+     *
+     * @returns {Boolean} true if the browsers supports Web Workers, false if not.
+     *
+     * @see {@link http://www.w3.org/TR/workers/}
+     */
+    FeatureDetection.supportsWebWorkers = function() {
+        return typeof Worker !== 'undefined';
+    };
+
+    /**
+     * Detects whether the current browser supports Web Assembly.
+     *
+     * @returns {Boolean} true if the browsers supports Web Assembly, false if not.
+     *
+     * @see {@link https://developer.mozilla.org/en-US/docs/WebAssembly}
+     */
+    FeatureDetection.supportsWebAssembly = function() {
+        return typeof WebAssembly !== 'undefined' && !FeatureDetection.isEdge();
+    };
+
+    return FeatureDetection;
+});
+
 define('Core/getBaseUri',[
         '../ThirdParty/Uri',
         './defined',
@@ -2256,7 +2855,7 @@ define('Core/Request',[
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         var throttleByServer = defaultValue(options.throttleByServer, false);
-        var throttle = throttleByServer || defaultValue(options.throttle, false);
+        var throttle = defaultValue(options.throttle, false);
 
         /**
          * The URL to request.
@@ -3272,17 +3871,17 @@ define('Core/RequestScheduler',[
             request.serverKey = RequestScheduler.getServerKey(request.url);
         }
 
+        if (request.throttleByServer && !serverHasOpenSlots(request.serverKey)) {
+            // Server is saturated. Try again later.
+            return undefined;
+        }
+
         if (!RequestScheduler.throttleRequests || !request.throttle) {
             return startRequest(request);
         }
 
         if (activeRequests.length >= RequestScheduler.maximumRequests) {
             // Active requests are saturated. Try again later.
-            return undefined;
-        }
-
-        if (request.throttleByServer && !serverHasOpenSlots(request.serverKey)) {
-            // Server is saturated. Try again later.
             return undefined;
         }
 
@@ -3611,6 +4210,7 @@ define('Core/Resource',[
         './deprecationWarning',
         './DeveloperError',
         './freezeObject',
+        './FeatureDetection',
         './getAbsoluteUri',
         './getBaseUri',
         './getExtensionFromUri',
@@ -3639,6 +4239,7 @@ define('Core/Resource',[
         deprecationWarning,
         DeveloperError,
         freezeObject,
+        FeatureDetection,
         getAbsoluteUri,
         getBaseUri,
         getExtensionFromUri,
@@ -3972,6 +4573,47 @@ define('Core/Resource',[
         });
     };
 
+    var supportsImageBitmapOptionsPromise;
+    /**
+     * A helper function to check whether createImageBitmap supports passing ImageBitmapOptions.
+     *
+     * @returns {Promise<Boolean>} A promise that resolves to true if this browser supports creating an ImageBitmap with options.
+     *
+     * @private
+     */
+    Resource.supportsImageBitmapOptions = function() {
+        // Until the HTML folks figure out what to do about this, we need to actually try loading an image to
+        // know if this browser supports passing options to the createImageBitmap function.
+        // https://github.com/whatwg/html/pull/4248
+        if (defined(supportsImageBitmapOptionsPromise)) {
+            return supportsImageBitmapOptionsPromise;
+        }
+
+        if (typeof createImageBitmap !== 'function') {
+            supportsImageBitmapOptionsPromise = when.resolve(false);
+            return supportsImageBitmapOptionsPromise;
+        }
+
+        var imageDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWP4////fwAJ+wP9CNHoHgAAAABJRU5ErkJggg==';
+
+        supportsImageBitmapOptionsPromise = Resource.fetchBlob({
+            url : imageDataUri
+        })
+            .then(function(blob) {
+                return createImageBitmap(blob, {
+                    imageOrientation: 'flipY'
+                });
+            })
+            .then(function(imageBitmap) {
+                return true;
+            })
+            .otherwise(function() {
+                return false;
+            });
+
+        return supportsImageBitmapOptionsPromise;
+    };
+
     defineProperties(Resource, {
         /**
          * Returns true if blobs are supported.
@@ -4124,15 +4766,17 @@ define('Core/Resource',[
         // objectToQuery escapes the placeholders.  Undo that.
         var url = uri.toString().replace(/%7B/g, '{').replace(/%7D/g, '}');
 
-        var template = this._templateValues;
-        var keys = Object.keys(template);
-        if (keys.length > 0) {
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                var value = template[key];
-                url = url.replace(new RegExp('{' + key + '}', 'g'), encodeURIComponent(value));
+        var templateValues = this._templateValues;
+        url = url.replace(/{(.*?)}/g, function(match, key) {
+            var replacement = templateValues[key];
+            if (defined(replacement)) {
+                // use the replacement value from templateValues if there is one...
+                return encodeURIComponent(replacement);
             }
-        }
+            // otherwise leave it unchanged
+            return match;
+        });
+
         if (proxy && defined(this.proxy)) {
             url = this.proxy.getURL(url);
         }
@@ -4152,21 +4796,6 @@ define('Core/Resource',[
         } else {
             this._queryParameters = combineQueryParameters(params, this._queryParameters, false);
         }
-    };
-
-    /**
-     * Combines the specified object and the existing query parameters. This allows you to add many parameters at once,
-     *  as opposed to adding them one at a time to the queryParameters property. If a value is already set, it will be replaced with the new value.
-     *
-     * @param {Object} params The query parameters
-     * @param {Boolean} [useAsDefault=false] If true the params will be used as the default values, so they will only be set if they are undefined.
-     *
-     * @deprecated
-     */
-    Resource.prototype.addQueryParameters = function(params, useAsDefault) {
-        deprecationWarning('Resource.addQueryParameters', 'addQueryParameters has been deprecated and will be removed 1.45. Use setQueryParameters or appendQueryParameters instead.');
-
-        return this.setQueryParameters(params, useAsDefault);
     };
 
     /**
@@ -4192,21 +4821,6 @@ define('Core/Resource',[
         } else {
             this._templateValues = combine(template, this._templateValues);
         }
-    };
-
-    /**
-     * Combines the specified object and the existing template values. This allows you to add many values at once,
-     *  as opposed to adding them one at a time to the templateValues property. If a value is already set, it will become an array and the new value will be appended.
-     *
-     * @param {Object} template The template values
-     * @param {Boolean} [useAsDefault=false] If true the values will be used as the default values, so they will only be set if they are undefined.
-     *
-     * @deprecated
-     */
-    Resource.prototype.addTemplateValues = function(template, useAsDefault) {
-        deprecationWarning('Resource.addTemplateValues', 'addTemplateValues has been deprecated and will be removed 1.45. Use setTemplateValues.');
-
-        return this.setTemplateValues(template, useAsDefault);
     };
 
     /**
@@ -4425,10 +5039,13 @@ define('Core/Resource',[
 
     /**
      * Asynchronously loads the given image resource.  Returns a promise that will resolve to
-     * an {@link Image} once loaded, or reject if the image failed to load.
+     * an {@link https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap|ImageBitmap} if the browser supports `createImageBitmap` or otherwise an
+     * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement|Image} once loaded, or reject if the image failed to load.
      *
-     * @param {Boolean} [preferBlob = false]  If true, we will load the image via a blob.
-     * @returns {Promise.<Image>|undefined} a promise that will resolve to the requested data when loaded. Returns undefined if <code>request.throttle</code> is true and the request does not have high enough priority.
+     * @param {Object} [options] An object with the following properties.
+     * @param {Boolean} [options.preferBlob=false] If true, we will load the image via a blob.
+     * @param {Boolean} [options.flipY=true] If true, image will be vertially flipped during decode. Only applies if the browser supports `createImageBitmap`.
+     * @returns {Promise.<ImageBitmap>|Promise.<Image>|undefined} a promise that will resolve to the requested data when loaded. Returns undefined if <code>request.throttle</code> is true and the request does not have high enough priority.
      *
      *
      * @example
@@ -4447,8 +5064,16 @@ define('Core/Resource',[
      * @see {@link http://www.w3.org/TR/cors/|Cross-Origin Resource Sharing}
      * @see {@link http://wiki.commonjs.org/wiki/Promises/A|CommonJS Promises/A}
      */
-    Resource.prototype.fetchImage = function (preferBlob) {
-        preferBlob = defaultValue(preferBlob, false);
+    Resource.prototype.fetchImage = function (options) {
+        if (typeof options === 'boolean') {
+            deprecationWarning('fetchImage-parameter-change', 'fetchImage now takes an options object in CesiumJS 1.57. Use resource.fetchImage({ preferBlob: true }) instead of resource.fetchImage(true).');
+            options = {
+                preferBlob : options
+            };
+        }
+        options = defaultValue(options, defaultValue.EMPTY_OBJECT);
+        var preferBlob = defaultValue(options.preferBlob, false);
+        var flipY = defaultValue(options.flipY, true);
 
         checkAndResetRequest(this.request);
 
@@ -4458,7 +5083,7 @@ define('Core/Resource',[
         // 3. It's a blob URI
         // 4. It doesn't have request headers and we preferBlob is false
         if (!xhrBlobSupported || this.isDataUri || this.isBlobUri || (!this.hasHeaders && !preferBlob)) {
-            return fetchImage(this, true);
+            return fetchImage(this, flipY);
         }
 
         var blobPromise = this.fetchBlob();
@@ -4466,12 +5091,20 @@ define('Core/Resource',[
             return;
         }
 
+        var supportsImageBitmap;
         var generatedBlobResource;
         var generatedBlob;
-        return blobPromise
+        return Resource.supportsImageBitmapOptions()
+            .then(function(result) {
+                supportsImageBitmap = result;
+                return blobPromise;
+            })
             .then(function(blob) {
                 if (!defined(blob)) {
                     return;
+                }
+                if (supportsImageBitmap) {
+                    return Resource._Implementations.createImageBitmapFromBlob(blob, flipY);
                 }
                 generatedBlob = blob;
                 var blobUrl = window.URL.createObjectURL(blob);
@@ -4479,11 +5112,14 @@ define('Core/Resource',[
                     url: blobUrl
                 });
 
-                return fetchImage(generatedBlobResource);
+                return fetchImage(generatedBlobResource, flipY);
             })
             .then(function(image) {
                 if (!defined(image)) {
                     return;
+                }
+                if (supportsImageBitmap) {
+                    return image;
                 }
                 window.URL.revokeObjectURL(generatedBlobResource.url);
 
@@ -4501,7 +5137,7 @@ define('Core/Resource',[
             });
     };
 
-    function fetchImage(resource) {
+    function fetchImage(resource, flipY) {
         var request = resource.request;
         request.url = resource.url;
         request.requestFunction = function() {
@@ -4515,7 +5151,7 @@ define('Core/Resource',[
 
             var deferred = when.defer();
 
-            Resource._Implementations.createImage(url, crossOrigin, deferred);
+            Resource._Implementations.createImage(url, crossOrigin, deferred, flipY);
 
             return deferred.promise;
         };
@@ -4539,7 +5175,7 @@ define('Core/Resource',[
                             request.state = RequestState.UNISSUED;
                             request.deferred = undefined;
 
-                            return fetchImage(resource);
+                            return fetchImage(resource, flipY);
                         }
 
                         return when.reject(e);
@@ -4556,15 +5192,19 @@ define('Core/Resource',[
      * @param {Object} [options.templateValues] Key/Value pairs that are used to replace template values (eg. {x}).
      * @param {Object} [options.headers={}] Additional HTTP headers that will be sent.
      * @param {DefaultProxy} [options.proxy] A proxy to be used when loading the resource.
+     * @param {Boolean} [options.flipY = true] Whether to vertically flip the image during fetch and decode. Only applies when requesting an image and the browser supports createImageBitmap.
      * @param {Resource~RetryCallback} [options.retryCallback] The Function to call when a request for this resource fails. If it returns true, the request will be retried.
      * @param {Number} [options.retryAttempts=0] The number of times the retryCallback should be called before giving up.
      * @param {Request} [options.request] A Request object that will be used. Intended for internal use only.
      * @param {Boolean} [options.preferBlob = false]  If true, we will load the image via a blob.
-     * @returns {Promise.<Image>|undefined} a promise that will resolve to the requested data when loaded. Returns undefined if <code>request.throttle</code> is true and the request does not have high enough priority.
+     * @returns {Promise.<ImageBitmap>|Promise.<Image>|undefined} a promise that will resolve to the requested data when loaded. Returns undefined if <code>request.throttle</code> is true and the request does not have high enough priority.
      */
     Resource.fetchImage = function (options) {
         var resource = new Resource(options);
-        return resource.fetchImage(options.preferBlob);
+        return resource.fetchImage({
+            flipY: options.flipY,
+            preferBlob: options.preferBlob
+        });
     };
 
     /**
@@ -5351,7 +5991,7 @@ define('Core/Resource',[
      */
     Resource._Implementations = {};
 
-    Resource._Implementations.createImage = function(url, crossOrigin, deferred) {
+    function loadImageElement(url, crossOrigin, deferred) {
         var image = new Image();
 
         image.onload = function() {
@@ -5371,6 +6011,55 @@ define('Core/Resource',[
         }
 
         image.src = url;
+    }
+
+    Resource._Implementations.createImage = function(url, crossOrigin, deferred, flipY) {
+        // Passing an Image to createImageBitmap will force it to run on the main thread
+        // since DOM elements don't exist on workers. We convert it to a blob so it's non-blocking.
+        // See:
+        //    https://bugzilla.mozilla.org/show_bug.cgi?id=1044102#c38
+        //    https://bugs.chromium.org/p/chromium/issues/detail?id=580202#c10
+        Resource.supportsImageBitmapOptions()
+            .then(function(result) {
+                // We can only use ImageBitmap if we can flip on decode.
+                // See: https://github.com/AnalyticalGraphicsInc/cesium/pull/7579#issuecomment-466146898
+                if (!result) {
+                    loadImageElement(url, crossOrigin, deferred);
+                    return;
+                }
+
+                return Resource.fetchBlob({
+                    url: url
+                });
+            })
+            .then(function(blob) {
+                if (!defined(blob)) {
+                    return;
+                }
+
+                return Resource._Implementations.createImageBitmapFromBlob(blob, flipY);
+            })
+            .then(function(imageBitmap) {
+                if (!defined(imageBitmap)) {
+                    return;
+                }
+
+                deferred.resolve(imageBitmap);
+            })
+            .otherwise(deferred.reject);
+    };
+
+    Resource._Implementations.createImageBitmapFromBlob = function(blob, flipY) {
+        return Resource.supportsImageBitmapOptions()
+            .then(function(result) {
+                if (!result) {
+                    return createImageBitmap(blob);
+                }
+
+                return createImageBitmap(blob, {
+                    imageOrientation: flipY ? 'flipY' : 'none'
+                });
+            });
     };
 
     function decodeResponse(loadWithHttpResponse, responseType) {
@@ -5385,10 +6074,15 @@ define('Core/Resource',[
     }
 
     function loadWithHttpRequest(url, responseType, method, data, headers, deferred, overrideMimeType) {
+
+        // Specifically use the Node version of require to avoid conflicts with the global
+        // require defined in the built version of Cesium.
+        var nodeRequire = global.require; // eslint-disable-line
+
         // Note: only the 'json' and 'text' responseTypes transforms the loaded buffer
-        var URL = require('url').parse(url);
-        var http = URL.protocol === 'https:' ? require('https') : require('http');
-        var zlib = require('zlib');
+        var URL = nodeRequire('url').parse(url);
+        var http = URL.protocol === 'https:' ? nodeRequire('https') : nodeRequire('http');
+        var zlib = nodeRequire('zlib');
         var options = {
             protocol : URL.protocol,
             hostname : URL.hostname,
@@ -6468,6 +7162,100 @@ define('Core/Math',[
                 absoluteEpsilon = defaultValue(absoluteEpsilon, relativeEpsilon);
         var absDiff = Math.abs(left - right);
         return absDiff <= absoluteEpsilon || absDiff <= relativeEpsilon * Math.max(Math.abs(left), Math.abs(right));
+    };
+
+    /**
+     * Determines if the left value is less than the right value. If the two values are within
+     * <code>absoluteEpsilon</code> of each other, they are considered equal and this function returns false.
+     *
+     * @param {Number} left The first number to compare.
+     * @param {Number} right The second number to compare.
+     * @param {Number} absoluteEpsilon The absolute epsilon to use in comparison.
+     * @returns {Boolean} <code>true</code> if <code>left</code> is less than <code>right</code> by more than
+     *          <code>absoluteEpsilon<code>. <code>false</code> if <code>left</code> is greater or if the two
+     *          values are nearly equal.
+     */
+    CesiumMath.lessThan = function(left, right, absoluteEpsilon) {
+                if (!defined(left)) {
+            throw new DeveloperError('first is required.');
+        }
+        if (!defined(right)) {
+            throw new DeveloperError('second is required.');
+        }
+        if (!defined(absoluteEpsilon)) {
+            throw new DeveloperError('relativeEpsilon is required.');
+        }
+                return left - right < -absoluteEpsilon;
+    };
+
+    /**
+     * Determines if the left value is less than or equal to the right value. If the two values are within
+     * <code>absoluteEpsilon</code> of each other, they are considered equal and this function returns true.
+     *
+     * @param {Number} left The first number to compare.
+     * @param {Number} right The second number to compare.
+     * @param {Number} absoluteEpsilon The absolute epsilon to use in comparison.
+     * @returns {Boolean} <code>true</code> if <code>left</code> is less than <code>right</code> or if the
+     *          the values are nearly equal.
+     */
+    CesiumMath.lessThanOrEquals = function(left, right, absoluteEpsilon) {
+                if (!defined(left)) {
+            throw new DeveloperError('first is required.');
+        }
+        if (!defined(right)) {
+            throw new DeveloperError('second is required.');
+        }
+        if (!defined(absoluteEpsilon)) {
+            throw new DeveloperError('relativeEpsilon is required.');
+        }
+                return left - right < absoluteEpsilon;
+    };
+
+    /**
+     * Determines if the left value is greater the right value. If the two values are within
+     * <code>absoluteEpsilon</code> of each other, they are considered equal and this function returns false.
+     *
+     * @param {Number} left The first number to compare.
+     * @param {Number} right The second number to compare.
+     * @param {Number} absoluteEpsilon The absolute epsilon to use in comparison.
+     * @returns {Boolean} <code>true</code> if <code>left</code> is greater than <code>right</code> by more than
+     *          <code>absoluteEpsilon<code>. <code>false</code> if <code>left</code> is less or if the two
+     *          values are nearly equal.
+     */
+    CesiumMath.greaterThan = function(left, right, absoluteEpsilon) {
+                if (!defined(left)) {
+            throw new DeveloperError('first is required.');
+        }
+        if (!defined(right)) {
+            throw new DeveloperError('second is required.');
+        }
+        if (!defined(absoluteEpsilon)) {
+            throw new DeveloperError('relativeEpsilon is required.');
+        }
+                return left - right > absoluteEpsilon;
+    };
+
+    /**
+     * Determines if the left value is greater than or equal to the right value. If the two values are within
+     * <code>absoluteEpsilon</code> of each other, they are considered equal and this function returns true.
+     *
+     * @param {Number} left The first number to compare.
+     * @param {Number} right The second number to compare.
+     * @param {Number} absoluteEpsilon The absolute epsilon to use in comparison.
+     * @returns {Boolean} <code>true</code> if <code>left</code> is greater than <code>right</code> or if the
+     *          the values are nearly equal.
+     */
+    CesiumMath.greaterThanOrEquals = function(left, right, absoluteEpsilon) {
+                if (!defined(left)) {
+            throw new DeveloperError('first is required.');
+        }
+        if (!defined(right)) {
+            throw new DeveloperError('second is required.');
+        }
+        if (!defined(absoluteEpsilon)) {
+            throw new DeveloperError('relativeEpsilon is required.');
+        }
+                return left - right > -absoluteEpsilon;
     };
 
     var factorials = [1];
@@ -17185,6 +17973,46 @@ define('Core/ApproximateTerrainHeights',[
     return ApproximateTerrainHeights;
 });
 
+define('Core/ArcType',[
+        './freezeObject'
+    ], function(
+        freezeObject) {
+    'use strict';
+
+    /**
+     * ArcType defines the path that should be taken connecting vertices.
+     *
+     * @exports ArcType
+     */
+    var ArcType = {
+        /**
+         * Straight line that does not conform to the surface of the ellipsoid.
+         *
+         * @type {Number}
+         * @constant
+         */
+        NONE : 0,
+
+        /**
+         * Follow geodesic path.
+         *
+         * @type {Number}
+         * @constant
+         */
+        GEODESIC : 1,
+
+        /**
+         * Follow rhumb or loxodrome path.
+         *
+         * @type {Number}
+         * @constant
+         */
+        RHUMB : 2
+    };
+
+    return freezeObject(ArcType);
+});
+
 define('Core/arrayRemoveDuplicates',[
         './Check',
         './defaultValue',
@@ -17280,551 +18108,6 @@ define('Core/arrayRemoveDuplicates',[
     }
 
     return arrayRemoveDuplicates;
-});
-
-define('Core/Fullscreen',[
-        './defined',
-        './defineProperties'
-    ], function(
-        defined,
-        defineProperties) {
-    'use strict';
-
-    var _supportsFullscreen;
-    var _names = {
-        requestFullscreen : undefined,
-        exitFullscreen : undefined,
-        fullscreenEnabled : undefined,
-        fullscreenElement : undefined,
-        fullscreenchange : undefined,
-        fullscreenerror : undefined
-    };
-
-    /**
-     * Browser-independent functions for working with the standard fullscreen API.
-     *
-     * @exports Fullscreen
-     * @namespace
-     *
-     * @see {@link http://dvcs.w3.org/hg/fullscreen/raw-file/tip/Overview.html|W3C Fullscreen Living Specification}
-     */
-    var Fullscreen = {};
-
-    defineProperties(Fullscreen, {
-        /**
-         * The element that is currently fullscreen, if any.  To simply check if the
-         * browser is in fullscreen mode or not, use {@link Fullscreen#fullscreen}.
-         * @memberof Fullscreen
-         * @type {Object}
-         * @readonly
-         */
-        element : {
-            get : function() {
-                if (!Fullscreen.supportsFullscreen()) {
-                    return undefined;
-                }
-
-                return document[_names.fullscreenElement];
-            }
-        },
-
-        /**
-         * The name of the event on the document that is fired when fullscreen is
-         * entered or exited.  This event name is intended for use with addEventListener.
-         * In your event handler, to determine if the browser is in fullscreen mode or not,
-         * use {@link Fullscreen#fullscreen}.
-         * @memberof Fullscreen
-         * @type {String}
-         * @readonly
-         */
-        changeEventName : {
-            get : function() {
-                if (!Fullscreen.supportsFullscreen()) {
-                    return undefined;
-                }
-
-                return _names.fullscreenchange;
-            }
-        },
-
-        /**
-         * The name of the event that is fired when a fullscreen error
-         * occurs.  This event name is intended for use with addEventListener.
-         * @memberof Fullscreen
-         * @type {String}
-         * @readonly
-         */
-        errorEventName : {
-            get : function() {
-                if (!Fullscreen.supportsFullscreen()) {
-                    return undefined;
-                }
-
-                return _names.fullscreenerror;
-            }
-        },
-
-        /**
-         * Determine whether the browser will allow an element to be made fullscreen, or not.
-         * For example, by default, iframes cannot go fullscreen unless the containing page
-         * adds an "allowfullscreen" attribute (or prefixed equivalent).
-         * @memberof Fullscreen
-         * @type {Boolean}
-         * @readonly
-         */
-        enabled : {
-            get : function() {
-                if (!Fullscreen.supportsFullscreen()) {
-                    return undefined;
-                }
-
-                return document[_names.fullscreenEnabled];
-            }
-        },
-
-        /**
-         * Determines if the browser is currently in fullscreen mode.
-         * @memberof Fullscreen
-         * @type {Boolean}
-         * @readonly
-         */
-        fullscreen : {
-            get : function() {
-                if (!Fullscreen.supportsFullscreen()) {
-                    return undefined;
-                }
-
-                return Fullscreen.element !== null;
-            }
-        }
-    });
-
-    /**
-     * Detects whether the browser supports the standard fullscreen API.
-     *
-     * @returns {Boolean} <code>true</code> if the browser supports the standard fullscreen API,
-     * <code>false</code> otherwise.
-     */
-    Fullscreen.supportsFullscreen = function() {
-        if (defined(_supportsFullscreen)) {
-            return _supportsFullscreen;
-        }
-
-        _supportsFullscreen = false;
-
-        var body = document.body;
-        if (typeof body.requestFullscreen === 'function') {
-            // go with the unprefixed, standard set of names
-            _names.requestFullscreen = 'requestFullscreen';
-            _names.exitFullscreen = 'exitFullscreen';
-            _names.fullscreenEnabled = 'fullscreenEnabled';
-            _names.fullscreenElement = 'fullscreenElement';
-            _names.fullscreenchange = 'fullscreenchange';
-            _names.fullscreenerror = 'fullscreenerror';
-            _supportsFullscreen = true;
-            return _supportsFullscreen;
-        }
-
-        //check for the correct combination of prefix plus the various names that browsers use
-        var prefixes = ['webkit', 'moz', 'o', 'ms', 'khtml'];
-        var name;
-        for (var i = 0, len = prefixes.length; i < len; ++i) {
-            var prefix = prefixes[i];
-
-            // casing of Fullscreen differs across browsers
-            name = prefix + 'RequestFullscreen';
-            if (typeof body[name] === 'function') {
-                _names.requestFullscreen = name;
-                _supportsFullscreen = true;
-            } else {
-                name = prefix + 'RequestFullScreen';
-                if (typeof body[name] === 'function') {
-                    _names.requestFullscreen = name;
-                    _supportsFullscreen = true;
-                }
-            }
-
-            // disagreement about whether it's "exit" as per spec, or "cancel"
-            name = prefix + 'ExitFullscreen';
-            if (typeof document[name] === 'function') {
-                _names.exitFullscreen = name;
-            } else {
-                name = prefix + 'CancelFullScreen';
-                if (typeof document[name] === 'function') {
-                    _names.exitFullscreen = name;
-                }
-            }
-
-            // casing of Fullscreen differs across browsers
-            name = prefix + 'FullscreenEnabled';
-            if (document[name] !== undefined) {
-                _names.fullscreenEnabled = name;
-            } else {
-                name = prefix + 'FullScreenEnabled';
-                if (document[name] !== undefined) {
-                    _names.fullscreenEnabled = name;
-                }
-            }
-
-            // casing of Fullscreen differs across browsers
-            name = prefix + 'FullscreenElement';
-            if (document[name] !== undefined) {
-                _names.fullscreenElement = name;
-            } else {
-                name = prefix + 'FullScreenElement';
-                if (document[name] !== undefined) {
-                    _names.fullscreenElement = name;
-                }
-            }
-
-            // thankfully, event names are all lowercase per spec
-            name = prefix + 'fullscreenchange';
-            // event names do not have 'on' in the front, but the property on the document does
-            if (document['on' + name] !== undefined) {
-                //except on IE
-                if (prefix === 'ms') {
-                    name = 'MSFullscreenChange';
-                }
-                _names.fullscreenchange = name;
-            }
-
-            name = prefix + 'fullscreenerror';
-            if (document['on' + name] !== undefined) {
-                //except on IE
-                if (prefix === 'ms') {
-                    name = 'MSFullscreenError';
-                }
-                _names.fullscreenerror = name;
-            }
-        }
-
-        return _supportsFullscreen;
-    };
-
-    /**
-     * Asynchronously requests the browser to enter fullscreen mode on the given element.
-     * If fullscreen mode is not supported by the browser, does nothing.
-     *
-     * @param {Object} element The HTML element which will be placed into fullscreen mode.
-     * @param {HMDVRDevice} [vrDevice] The VR device.
-     *
-     * @example
-     * // Put the entire page into fullscreen.
-     * Cesium.Fullscreen.requestFullscreen(document.body)
-     *
-     * // Place only the Cesium canvas into fullscreen.
-     * Cesium.Fullscreen.requestFullscreen(scene.canvas)
-     */
-    Fullscreen.requestFullscreen = function(element, vrDevice) {
-        if (!Fullscreen.supportsFullscreen()) {
-            return;
-        }
-
-        element[_names.requestFullscreen]({ vrDisplay: vrDevice });
-    };
-
-    /**
-     * Asynchronously exits fullscreen mode.  If the browser is not currently
-     * in fullscreen, or if fullscreen mode is not supported by the browser, does nothing.
-     */
-    Fullscreen.exitFullscreen = function() {
-        if (!Fullscreen.supportsFullscreen()) {
-            return;
-        }
-
-        document[_names.exitFullscreen]();
-    };
-
-    return Fullscreen;
-});
-
-define('Core/FeatureDetection',[
-        './defaultValue',
-        './defined',
-        './Fullscreen'
-    ], function(
-        defaultValue,
-        defined,
-        Fullscreen) {
-    'use strict';
-    /*global CanvasPixelArray*/
-
-    var theNavigator;
-    if (typeof navigator !== 'undefined') {
-        theNavigator = navigator;
-    } else {
-        theNavigator = {};
-    }
-
-    function extractVersion(versionString) {
-        var parts = versionString.split('.');
-        for (var i = 0, len = parts.length; i < len; ++i) {
-            parts[i] = parseInt(parts[i], 10);
-        }
-        return parts;
-    }
-
-    var isChromeResult;
-    var chromeVersionResult;
-    function isChrome() {
-        if (!defined(isChromeResult)) {
-            isChromeResult = false;
-            // Edge contains Chrome in the user agent too
-            if (!isEdge()) {
-                var fields = (/ Chrome\/([\.0-9]+)/).exec(theNavigator.userAgent);
-                if (fields !== null) {
-                    isChromeResult = true;
-                    chromeVersionResult = extractVersion(fields[1]);
-                }
-            }
-        }
-
-        return isChromeResult;
-    }
-
-    function chromeVersion() {
-        return isChrome() && chromeVersionResult;
-    }
-
-    var isSafariResult;
-    var safariVersionResult;
-    function isSafari() {
-        if (!defined(isSafariResult)) {
-            isSafariResult = false;
-
-            // Chrome and Edge contain Safari in the user agent too
-            if (!isChrome() && !isEdge() && (/ Safari\/[\.0-9]+/).test(theNavigator.userAgent)) {
-                var fields = (/ Version\/([\.0-9]+)/).exec(theNavigator.userAgent);
-                if (fields !== null) {
-                    isSafariResult = true;
-                    safariVersionResult = extractVersion(fields[1]);
-                }
-            }
-        }
-
-        return isSafariResult;
-    }
-
-    function safariVersion() {
-        return isSafari() && safariVersionResult;
-    }
-
-    var isWebkitResult;
-    var webkitVersionResult;
-    function isWebkit() {
-        if (!defined(isWebkitResult)) {
-            isWebkitResult = false;
-
-            var fields = (/ AppleWebKit\/([\.0-9]+)(\+?)/).exec(theNavigator.userAgent);
-            if (fields !== null) {
-                isWebkitResult = true;
-                webkitVersionResult = extractVersion(fields[1]);
-                webkitVersionResult.isNightly = !!fields[2];
-            }
-        }
-
-        return isWebkitResult;
-    }
-
-    function webkitVersion() {
-        return isWebkit() && webkitVersionResult;
-    }
-
-    var isInternetExplorerResult;
-    var internetExplorerVersionResult;
-    function isInternetExplorer() {
-        if (!defined(isInternetExplorerResult)) {
-            isInternetExplorerResult = false;
-
-            var fields;
-            if (theNavigator.appName === 'Microsoft Internet Explorer') {
-                fields = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(theNavigator.userAgent);
-                if (fields !== null) {
-                    isInternetExplorerResult = true;
-                    internetExplorerVersionResult = extractVersion(fields[1]);
-                }
-            } else if (theNavigator.appName === 'Netscape') {
-                fields = /Trident\/.*rv:([0-9]{1,}[\.0-9]{0,})/.exec(theNavigator.userAgent);
-                if (fields !== null) {
-                    isInternetExplorerResult = true;
-                    internetExplorerVersionResult = extractVersion(fields[1]);
-                }
-            }
-        }
-        return isInternetExplorerResult;
-    }
-
-    function internetExplorerVersion() {
-        return isInternetExplorer() && internetExplorerVersionResult;
-    }
-
-    var isEdgeResult;
-    var edgeVersionResult;
-    function isEdge() {
-        if (!defined(isEdgeResult)) {
-            isEdgeResult = false;
-            var fields = (/ Edge\/([\.0-9]+)/).exec(theNavigator.userAgent);
-            if (fields !== null) {
-                isEdgeResult = true;
-                edgeVersionResult = extractVersion(fields[1]);
-            }
-        }
-        return isEdgeResult;
-    }
-
-    function edgeVersion() {
-        return isEdge() && edgeVersionResult;
-    }
-
-    var isFirefoxResult;
-    var firefoxVersionResult;
-    function isFirefox() {
-        if (!defined(isFirefoxResult)) {
-            isFirefoxResult = false;
-
-            var fields = /Firefox\/([\.0-9]+)/.exec(theNavigator.userAgent);
-            if (fields !== null) {
-                isFirefoxResult = true;
-                firefoxVersionResult = extractVersion(fields[1]);
-            }
-        }
-        return isFirefoxResult;
-    }
-
-    var isWindowsResult;
-    function isWindows() {
-        if (!defined(isWindowsResult)) {
-            isWindowsResult = /Windows/i.test(theNavigator.appVersion);
-        }
-        return isWindowsResult;
-    }
-
-    function firefoxVersion() {
-        return isFirefox() && firefoxVersionResult;
-    }
-
-    var hasPointerEvents;
-    function supportsPointerEvents() {
-        if (!defined(hasPointerEvents)) {
-            //While navigator.pointerEnabled is deprecated in the W3C specification
-            //we still need to use it if it exists in order to support browsers
-            //that rely on it, such as the Windows WebBrowser control which defines
-            //PointerEvent but sets navigator.pointerEnabled to false.
-
-            //Firefox disabled because of https://github.com/AnalyticalGraphicsInc/cesium/issues/6372
-            hasPointerEvents = !isFirefox() && typeof PointerEvent !== 'undefined' && (!defined(theNavigator.pointerEnabled) || theNavigator.pointerEnabled);
-        }
-        return hasPointerEvents;
-    }
-
-    var imageRenderingValueResult;
-    var supportsImageRenderingPixelatedResult;
-    function supportsImageRenderingPixelated() {
-        if (!defined(supportsImageRenderingPixelatedResult)) {
-            var canvas = document.createElement('canvas');
-            canvas.setAttribute('style',
-                                'image-rendering: -moz-crisp-edges;' +
-                                'image-rendering: pixelated;');
-            //canvas.style.imageRendering will be undefined, null or an empty string on unsupported browsers.
-            var tmp = canvas.style.imageRendering;
-            supportsImageRenderingPixelatedResult = defined(tmp) && tmp !== '';
-            if (supportsImageRenderingPixelatedResult) {
-                imageRenderingValueResult = tmp;
-            }
-        }
-        return supportsImageRenderingPixelatedResult;
-    }
-
-    function imageRenderingValue() {
-        return supportsImageRenderingPixelated() ? imageRenderingValueResult : undefined;
-    }
-
-    var typedArrayTypes = [];
-    if (typeof ArrayBuffer !== 'undefined') {
-        typedArrayTypes.push(Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array);
-
-        if (typeof Uint8ClampedArray !== 'undefined') {
-            typedArrayTypes.push(Uint8ClampedArray);
-        }
-
-        if (typeof CanvasPixelArray !== 'undefined') {
-            typedArrayTypes.push(CanvasPixelArray);
-        }
-    }
-
-    /**
-     * A set of functions to detect whether the current browser supports
-     * various features.
-     *
-     * @exports FeatureDetection
-     */
-    var FeatureDetection = {
-        isChrome : isChrome,
-        chromeVersion : chromeVersion,
-        isSafari : isSafari,
-        safariVersion : safariVersion,
-        isWebkit : isWebkit,
-        webkitVersion : webkitVersion,
-        isInternetExplorer : isInternetExplorer,
-        internetExplorerVersion : internetExplorerVersion,
-        isEdge : isEdge,
-        edgeVersion : edgeVersion,
-        isFirefox : isFirefox,
-        firefoxVersion : firefoxVersion,
-        isWindows : isWindows,
-        hardwareConcurrency : defaultValue(theNavigator.hardwareConcurrency, 3),
-        supportsPointerEvents : supportsPointerEvents,
-        supportsImageRenderingPixelated: supportsImageRenderingPixelated,
-        imageRenderingValue: imageRenderingValue,
-        typedArrayTypes: typedArrayTypes
-    };
-
-    /**
-     * Detects whether the current browser supports the full screen standard.
-     *
-     * @returns {Boolean} true if the browser supports the full screen standard, false if not.
-     *
-     * @see Fullscreen
-     * @see {@link http://dvcs.w3.org/hg/fullscreen/raw-file/tip/Overview.html|W3C Fullscreen Living Specification}
-     */
-    FeatureDetection.supportsFullscreen = function() {
-        return Fullscreen.supportsFullscreen();
-    };
-
-    /**
-     * Detects whether the current browser supports typed arrays.
-     *
-     * @returns {Boolean} true if the browser supports typed arrays, false if not.
-     *
-     * @see {@link http://www.khronos.org/registry/typedarray/specs/latest/|Typed Array Specification}
-     */
-    FeatureDetection.supportsTypedArrays = function() {
-        return typeof ArrayBuffer !== 'undefined';
-    };
-
-    /**
-     * Detects whether the current browser supports Web Workers.
-     *
-     * @returns {Boolean} true if the browsers supports Web Workers, false if not.
-     *
-     * @see {@link http://www.w3.org/TR/workers/}
-     */
-    FeatureDetection.supportsWebWorkers = function() {
-        return typeof Worker !== 'undefined';
-    };
-
-    /**
-     * Detects whether the current browser supports Web Assembly.
-     *
-     * @returns {Boolean} true if the browsers supports Web Assembly, false if not.
-     *
-     * @see {@link https://developer.mozilla.org/en-US/docs/WebAssembly}
-     */
-    FeatureDetection.supportsWebAssembly = function() {
-        return typeof WebAssembly !== 'undefined' && !FeatureDetection.isEdge();
-    };
-
-    return FeatureDetection;
 });
 
 define('Core/WebGLConstants',[
@@ -19165,6 +19448,502 @@ define('Core/EllipsoidGeodesic',[
     };
 
     return EllipsoidGeodesic;
+});
+
+define('Core/EllipsoidRhumbLine',[
+        './Cartesian3',
+        './Cartographic',
+        './Check',
+        './defaultValue',
+        './defined',
+        './defineProperties',
+        './DeveloperError',
+        './Ellipsoid',
+        './Math'
+    ], function(
+        Cartesian3,
+        Cartographic,
+        Check,
+        defaultValue,
+        defined,
+        defineProperties,
+        DeveloperError,
+        Ellipsoid,
+        CesiumMath) {
+    'use strict';
+
+    function calculateM(ellipticity, major, latitude) {
+        if (ellipticity === 0.0) { // sphere
+            return major * latitude;
+        }
+
+        var e2 = ellipticity * ellipticity;
+        var e4 = e2 * e2;
+        var e6 = e4 * e2;
+        var e8 = e6 * e2;
+        var e10 = e8 * e2;
+        var e12 = e10 * e2;
+        var phi = latitude;
+        var sin2Phi = Math.sin(2 * phi);
+        var sin4Phi = Math.sin(4 * phi);
+        var sin6Phi = Math.sin(6 * phi);
+        var sin8Phi = Math.sin(8 * phi);
+        var sin10Phi = Math.sin(10 * phi);
+        var sin12Phi = Math.sin(12 * phi);
+
+        return major * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256 - 175 * e8 / 16384 - 441 * e10 / 65536 - 4851 * e12 / 1048576) * phi
+                     - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024 + 105 * e8 / 4096 + 2205 * e10 / 131072 + 6237 * e12 / 524288) * sin2Phi
+                     + (15 * e4 / 256 + 45 * e6 / 1024 + 525 * e8 / 16384 + 1575 * e10 / 65536 + 155925 * e12 / 8388608) * sin4Phi
+                     - (35 * e6 / 3072 + 175 * e8 / 12288 + 3675 * e10 / 262144 + 13475 * e12 / 1048576) * sin6Phi
+                     + (315 * e8 / 131072 + 2205 * e10 / 524288 + 43659 * e12 / 8388608) * sin8Phi
+                     - (693 * e10 / 1310720 + 6237 * e12 / 5242880) * sin10Phi
+                     + 1001 * e12 / 8388608 * sin12Phi);
+    }
+
+    function calculateInverseM(M, ellipticity, major) {
+        var d = M / major;
+
+        if (ellipticity === 0.0) { // sphere
+            return d;
+        }
+
+        var d2 = d * d;
+        var d3 = d2 * d;
+        var d4 = d3 * d;
+        var e = ellipticity;
+        var e2 = e * e;
+        var e4 = e2 * e2;
+        var e6 = e4 * e2;
+        var e8 = e6 * e2;
+        var e10 = e8 * e2;
+        var e12 = e10 * e2;
+        var sin2D = Math.sin(2 * d);
+        var cos2D = Math.cos(2 * d);
+        var sin4D = Math.sin(4 * d);
+        var cos4D = Math.cos(4 * d);
+        var sin6D = Math.sin(6 * d);
+        var cos6D = Math.cos(6 * d);
+        var sin8D = Math.sin(8 * d);
+        var cos8D = Math.cos(8 * d);
+        var sin10D = Math.sin(10 * d);
+        var cos10D = Math.cos(10 * d);
+        var sin12D = Math.sin(12 * d);
+
+        return d + d * e2 / 4 + 7 * d * e4 / 64 + 15 * d * e6 / 256 + 579 * d * e8 / 16384 + 1515 * d * e10 / 65536 + 16837 * d * e12 / 1048576
+            + (3 * d * e4 / 16 + 45 * d * e6 / 256 - d * (32 * d2 - 561) * e8 / 4096 - d * (232 * d2 - 1677) * e10 / 16384 + d * (399985 - 90560 * d2 + 512 * d4) * e12 / 5242880) * cos2D
+            + (21 * d * e6 / 256 + 483 * d * e8 / 4096 - d * (224 * d2 - 1969) * e10 / 16384 - d * (33152 * d2 - 112599) * e12 / 1048576) * cos4D
+            + (151 * d * e8 / 4096 + 4681 * d * e10 / 65536 + 1479 * d * e12 / 16384 - 453 * d3 * e12 / 32768) * cos6D
+            + (1097 * d * e10 / 65536 + 42783 * d * e12 / 1048576) * cos8D
+            + 8011 * d * e12 / 1048576 * cos10D
+            + (3 * e2 / 8 + 3 * e4 / 16 + 213 * e6 / 2048 - 3 * d2 * e6 / 64 + 255 * e8 / 4096 - 33 * d2 * e8 / 512 + 20861 * e10 / 524288 - 33 * d2 * e10 / 512 + d4 * e10 / 1024 + 28273 * e12 / 1048576 - 471 * d2 * e12 / 8192 + 9 * d4 * e12 / 4096) * sin2D
+            + (21 * e4 / 256 + 21 * e6 / 256 + 533 * e8 / 8192 - 21 * d2 * e8 / 512 + 197 * e10 / 4096 - 315 * d2 * e10 / 4096 + 584039 * e12 / 16777216 - 12517 * d2 * e12 / 131072 + 7 * d4 * e12 / 2048) * sin4D
+            + (151 * e6 / 6144 + 151 * e8 / 4096 + 5019 * e10 / 131072 - 453 * d2 * e10 / 16384 + 26965 * e12 / 786432 - 8607 * d2 * e12 / 131072) * sin6D
+            + (1097 * e8 / 131072 + 1097 * e10 / 65536 + 225797 * e12 / 10485760 - 1097 * d2 * e12 / 65536) * sin8D
+            + (8011 * e10 / 2621440 + 8011 * e12 / 1048576) * sin10D
+            + 293393 * e12 / 251658240 * sin12D;
+    }
+
+    function calculateSigma(ellipticity, latitude) {
+        if (ellipticity === 0.0) { // sphere
+            return Math.log(Math.tan(0.5 * (CesiumMath.PI_OVER_TWO + latitude)));
+        }
+
+        var eSinL = ellipticity * Math.sin(latitude);
+        return Math.log(Math.tan(0.5 * (CesiumMath.PI_OVER_TWO + latitude))) - (ellipticity / 2.0 * Math.log((1 + eSinL) / (1 - eSinL)));
+    }
+
+    function calculateHeading(ellipsoidRhumbLine, firstLongitude, firstLatitude, secondLongitude, secondLatitude) {
+        var sigma1 = calculateSigma(ellipsoidRhumbLine._ellipticity, firstLatitude);
+        var sigma2 = calculateSigma(ellipsoidRhumbLine._ellipticity, secondLatitude);
+        return Math.atan2(CesiumMath.negativePiToPi(secondLongitude - firstLongitude), sigma2 - sigma1);
+    }
+
+    function calculateArcLength(ellipsoidRhumbLine, major, minor, firstLongitude, firstLatitude, secondLongitude, secondLatitude) {
+        var heading = ellipsoidRhumbLine._heading;
+        var deltaLongitude = secondLongitude - firstLongitude;
+
+        var distance = 0.0;
+
+        //Check to see if the rhumb line has constant latitude
+        //This equation will diverge if heading gets close to 90 degrees
+        if (CesiumMath.equalsEpsilon(Math.abs(heading), CesiumMath.PI_OVER_TWO, CesiumMath.EPSILON8)) { //If heading is close to 90 degrees
+            if (major === minor) {
+                distance = major * Math.cos(firstLatitude) * CesiumMath.negativePiToPi(deltaLongitude);
+            } else {
+                var sinPhi = Math.sin(firstLatitude);
+                distance = major * Math.cos(firstLatitude) * CesiumMath.negativePiToPi(deltaLongitude) / Math.sqrt(1 - ellipsoidRhumbLine._ellipticitySquared * sinPhi * sinPhi);
+            }
+        } else {
+            var M1 = calculateM(ellipsoidRhumbLine._ellipticity, major, firstLatitude);
+            var M2 = calculateM(ellipsoidRhumbLine._ellipticity, major, secondLatitude);
+
+            distance = (M2 - M1) / Math.cos(heading);
+        }
+        return Math.abs(distance);
+    }
+
+    var scratchCart1 = new Cartesian3();
+    var scratchCart2 = new Cartesian3();
+
+    function computeProperties(ellipsoidRhumbLine, start, end, ellipsoid) {
+        var firstCartesian = Cartesian3.normalize(ellipsoid.cartographicToCartesian(start, scratchCart2), scratchCart1);
+        var lastCartesian = Cartesian3.normalize(ellipsoid.cartographicToCartesian(end, scratchCart2), scratchCart2);
+
+                Check.typeOf.number.greaterThanOrEquals('value', Math.abs(Math.abs(Cartesian3.angleBetween(firstCartesian, lastCartesian)) - Math.PI), 0.0125);
+        
+        var major = ellipsoid.maximumRadius;
+        var minor = ellipsoid.minimumRadius;
+        var majorSquared = major * major;
+        var minorSquared = minor * minor;
+        ellipsoidRhumbLine._ellipticitySquared = (majorSquared - minorSquared) / majorSquared;
+        ellipsoidRhumbLine._ellipticity = Math.sqrt(ellipsoidRhumbLine._ellipticitySquared);
+
+        ellipsoidRhumbLine._start = Cartographic.clone(start, ellipsoidRhumbLine._start);
+        ellipsoidRhumbLine._start.height = 0;
+
+        ellipsoidRhumbLine._end = Cartographic.clone(end, ellipsoidRhumbLine._end);
+        ellipsoidRhumbLine._end.height = 0;
+
+        ellipsoidRhumbLine._heading = calculateHeading(ellipsoidRhumbLine, start.longitude, start.latitude, end.longitude, end.latitude);
+        ellipsoidRhumbLine._distance = calculateArcLength(ellipsoidRhumbLine, ellipsoid.maximumRadius, ellipsoid.minimumRadius,
+                                                          start.longitude, start.latitude, end.longitude, end.latitude);
+    }
+
+    function interpolateUsingSurfaceDistance(start, heading, distance, major, ellipticity, result)
+    {
+        var ellipticitySquared = ellipticity * ellipticity;
+
+        var longitude;
+        var latitude;
+        var deltaLongitude;
+
+        //Check to see if the rhumb line has constant latitude
+        //This won't converge if heading is close to 90 degrees
+        if (Math.abs(CesiumMath.PI_OVER_TWO - Math.abs(heading)) > CesiumMath.EPSILON8) {
+            //Calculate latitude of the second point
+            var M1 = calculateM(ellipticity, major, start.latitude);
+            var deltaM = distance * Math.cos(heading);
+            var M2 = M1 + deltaM;
+            latitude = calculateInverseM(M2, ellipticity, major);
+
+            //Now find the longitude of the second point
+            var sigma1 = calculateSigma(ellipticity, start.latitude);
+            var sigma2 = calculateSigma(ellipticity, latitude);
+            deltaLongitude = Math.tan(heading) * (sigma2 - sigma1);
+            longitude = CesiumMath.negativePiToPi(start.longitude + deltaLongitude);
+        } else { //If heading is close to 90 degrees
+            latitude = start.latitude;
+            var localRad;
+
+            if (ellipticity === 0.0) { // sphere
+                localRad = major * Math.cos(start.latitude);
+            } else {
+                var sinPhi = Math.sin(start.latitude);
+                localRad = major * Math.cos(start.latitude) / Math.sqrt(1 - ellipticitySquared * sinPhi * sinPhi);
+            }
+
+            deltaLongitude = distance / localRad;
+            if (heading > 0.0) {
+                longitude = CesiumMath.negativePiToPi(start.longitude + deltaLongitude);
+            } else {
+                longitude = CesiumMath.negativePiToPi(start.longitude - deltaLongitude);
+            }
+        }
+
+        if (defined(result)) {
+            result.longitude = longitude;
+            result.latitude = latitude;
+            result.height = 0;
+
+            return result;
+        }
+
+        return new Cartographic(longitude, latitude, 0);
+    }
+
+    /**
+     * Initializes a rhumb line on the ellipsoid connecting the two provided planetodetic points.
+     *
+     * @alias EllipsoidRhumbLine
+     * @constructor
+     *
+     * @param {Cartographic} [start] The initial planetodetic point on the path.
+     * @param {Cartographic} [end] The final planetodetic point on the path.
+     * @param {Ellipsoid} [ellipsoid=Ellipsoid.WGS84] The ellipsoid on which the rhumb line lies.
+     *
+     * @exception {DeveloperError} angle between start and end must be at least 0.0125 radians.
+     */
+    function EllipsoidRhumbLine(start, end, ellipsoid) {
+        var e = defaultValue(ellipsoid, Ellipsoid.WGS84);
+        this._ellipsoid = e;
+        this._start = new Cartographic();
+        this._end = new Cartographic();
+
+        this._heading = undefined;
+        this._distance = undefined;
+        this._ellipticity = undefined;
+        this._ellipticitySquared = undefined;
+
+        if (defined(start) && defined(end)) {
+            computeProperties(this, start, end, e);
+        }
+    }
+
+    defineProperties(EllipsoidRhumbLine.prototype, {
+        /**
+         * Gets the ellipsoid.
+         * @memberof EllipsoidRhumbLine.prototype
+         * @type {Ellipsoid}
+         * @readonly
+         */
+        ellipsoid : {
+            get : function() {
+                return this._ellipsoid;
+            }
+        },
+
+        /**
+         * Gets the surface distance between the start and end point
+         * @memberof EllipsoidRhumbLine.prototype
+         * @type {Number}
+         * @readonly
+         */
+        surfaceDistance : {
+            get : function() {
+                                Check.defined('distance', this._distance);
+                
+                return this._distance;
+            }
+        },
+
+        /**
+         * Gets the initial planetodetic point on the path.
+         * @memberof EllipsoidRhumbLine.prototype
+         * @type {Cartographic}
+         * @readonly
+         */
+        start : {
+            get : function() {
+                return this._start;
+            }
+        },
+
+        /**
+         * Gets the final planetodetic point on the path.
+         * @memberof EllipsoidRhumbLine.prototype
+         * @type {Cartographic}
+         * @readonly
+         */
+        end : {
+            get : function() {
+                return this._end;
+            }
+        },
+
+        /**
+         * Gets the heading from the start point to the end point.
+         * @memberof EllipsoidRhumbLine.prototype
+         * @type {Number}
+         * @readonly
+         */
+        heading : {
+            get : function() {
+                                Check.defined('distance', this._distance);
+                
+                return this._heading;
+            }
+        }
+    });
+
+    /**
+     * Create a rhumb line using an initial position with a heading and distance.
+     *
+     * @param {Cartographic} start The initial planetodetic point on the path.
+     * @param {Number} heading The heading in radians.
+     * @param {Number} distance The rhumb line distance between the start and end point.
+     * @param {Ellipsoid} [ellipsoid=Ellipsoid.WGS84] The ellipsoid on which the rhumb line lies.
+     * @param {EllipsoidRhumbLine} [result] The object in which to store the result.
+     * @returns {EllipsoidRhumbLine} The EllipsoidRhumbLine object.
+     */
+    EllipsoidRhumbLine.fromStartHeadingDistance = function(start, heading, distance, ellipsoid, result) {
+                Check.defined('start', start);
+        Check.defined('heading', heading);
+        Check.defined('distance', distance);
+        Check.typeOf.number.greaterThan('distance', distance, 0.0);
+        
+        var e = defaultValue(ellipsoid, Ellipsoid.WGS84);
+        var major = e.maximumRadius;
+        var minor = e.minimumRadius;
+        var majorSquared = major * major;
+        var minorSquared = minor * minor;
+        var ellipticity = Math.sqrt((majorSquared - minorSquared) / majorSquared);
+
+        heading = CesiumMath.negativePiToPi(heading);
+        var end = interpolateUsingSurfaceDistance(start, heading, distance, e.maximumRadius, ellipticity);
+
+        if (!defined(result) || (defined(ellipsoid) && !ellipsoid.equals(result.ellipsoid))) {
+            return new EllipsoidRhumbLine(start, end, e);
+        }
+
+        result.setEndPoints(start, end);
+        return result;
+    };
+
+    /**
+     * Sets the start and end points of the rhumb line.
+     *
+     * @param {Cartographic} start The initial planetodetic point on the path.
+     * @param {Cartographic} end The final planetodetic point on the path.
+     */
+    EllipsoidRhumbLine.prototype.setEndPoints = function(start, end) {
+                Check.defined('start', start);
+        Check.defined('end', end);
+        
+        computeProperties(this, start, end, this._ellipsoid);
+    };
+
+    /**
+     * Provides the location of a point at the indicated portion along the rhumb line.
+     *
+     * @param {Number} fraction The portion of the distance between the initial and final points.
+     * @param {Cartographic} [result] The object in which to store the result.
+     * @returns {Cartographic} The location of the point along the rhumb line.
+     */
+    EllipsoidRhumbLine.prototype.interpolateUsingFraction = function(fraction, result) {
+        return this.interpolateUsingSurfaceDistance(fraction * this._distance, result);
+    };
+
+    /**
+     * Provides the location of a point at the indicated distance along the rhumb line.
+     *
+     * @param {Number} distance The distance from the inital point to the point of interest along the rhumbLine.
+     * @param {Cartographic} [result] The object in which to store the result.
+     * @returns {Cartographic} The location of the point along the rhumb line.
+     *
+     * @exception {DeveloperError} start and end must be set before calling function interpolateUsingSurfaceDistance
+     */
+    EllipsoidRhumbLine.prototype.interpolateUsingSurfaceDistance = function(distance, result) {
+                Check.typeOf.number('distance', distance);
+        if (!defined(this._distance) || this._distance === 0.0) {
+            throw new DeveloperError('EllipsoidRhumbLine must have distinct start and end set.');
+        }
+        
+        return interpolateUsingSurfaceDistance(this._start, this._heading, distance, this._ellipsoid.maximumRadius, this._ellipticity, result);
+    };
+
+    /**
+     * Provides the location of a point at the indicated longitude along the rhumb line.
+     * If the longitude is outside the range of start and end points, the first intersection with the longitude from the start point in the direction of the heading is returned. This follows the spiral property of a rhumb line.
+     *
+     * @param {Number} intersectionLongitude The longitude, in radians, at which to find the intersection point from the starting point using the heading.
+     * @param {Cartographic} [result] The object in which to store the result.
+     * @returns {Cartographic} The location of the intersection point along the rhumb line, undefined if there is no intersection or infinite intersections.
+     *
+     * @exception {DeveloperError} start and end must be set before calling function findIntersectionWithLongitude.
+     */
+    EllipsoidRhumbLine.prototype.findIntersectionWithLongitude = function(intersectionLongitude, result) {
+                Check.typeOf.number('intersectionLongitude', intersectionLongitude);
+        if (!defined(this._distance) || this._distance === 0.0) {
+            throw new DeveloperError('EllipsoidRhumbLine must have distinct start and end set.');
+        }
+        
+        var ellipticity = this._ellipticity;
+        var heading = this._heading;
+        var absHeading = Math.abs(heading);
+        var start = this._start;
+
+        intersectionLongitude = CesiumMath.negativePiToPi(intersectionLongitude);
+
+        if (CesiumMath.equalsEpsilon(Math.abs(intersectionLongitude), Math.PI, CesiumMath.EPSILON14)) {
+            intersectionLongitude = CesiumMath.sign(start.longitude) * Math.PI;
+        }
+
+        if (!defined(result)) {
+            result = new Cartographic();
+        }
+
+        // If heading is -PI/2 or PI/2, this is an E-W rhumb line
+        // If heading is 0 or PI, this is an N-S rhumb line
+        if (Math.abs(CesiumMath.PI_OVER_TWO - absHeading) <= CesiumMath.EPSILON8) {
+            result.longitude = intersectionLongitude;
+            result.latitude = start.latitude;
+            result.height = 0;
+            return result;
+        } else if (CesiumMath.equalsEpsilon(Math.abs(CesiumMath.PI_OVER_TWO - absHeading), CesiumMath.PI_OVER_TWO, CesiumMath.EPSILON8)) {
+            if (CesiumMath.equalsEpsilon(intersectionLongitude, start.longitude, CesiumMath.EPSILON12)) {
+                return undefined;
+            }
+
+            result.longitude = intersectionLongitude;
+            result.latitude = CesiumMath.PI_OVER_TWO * CesiumMath.sign(CesiumMath.PI_OVER_TWO - heading);
+            result.height = 0;
+            return result;
+        }
+
+        // Use iterative solver from Equation 9 from http://edwilliams.org/ellipsoid/ellipsoid.pdf
+        var phi1 = start.latitude;
+        var eSinPhi1 = ellipticity * Math.sin(phi1);
+        var leftComponent = Math.tan(0.5 * (CesiumMath.PI_OVER_TWO + phi1)) * Math.exp((intersectionLongitude - start.longitude) / Math.tan(heading));
+        var denominator = (1 + eSinPhi1) / (1 - eSinPhi1);
+
+        var newPhi = start.latitude;
+        var phi;
+        do {
+            phi = newPhi;
+            var eSinPhi = ellipticity * Math.sin(phi);
+            var numerator = (1 + eSinPhi) / (1 - eSinPhi);
+            newPhi = 2 * Math.atan(leftComponent * Math.pow(numerator / denominator, ellipticity / 2)) - CesiumMath.PI_OVER_TWO;
+        } while (!CesiumMath.equalsEpsilon(newPhi, phi, CesiumMath.EPSILON12));
+
+        result.longitude = intersectionLongitude;
+        result.latitude = newPhi;
+        result.height = 0;
+        return result;
+    };
+
+    /**
+     * Provides the location of a point at the indicated latitude along the rhumb line.
+     * If the latitude is outside the range of start and end points, the first intersection with the latitude from that start point in the direction of the heading is returned. This follows the spiral property of a rhumb line.
+     *
+     * @param {Number} intersectionLatitude The latitude, in radians, at which to find the intersection point from the starting point using the heading.
+     * @param {Cartographic} [result] The object in which to store the result.
+     * @returns {Cartographic} The location of the intersection point along the rhumb line, undefined if there is no intersection or infinite intersections.
+     *
+     * @exception {DeveloperError} start and end must be set before calling function findIntersectionWithLongitude.
+     */
+    EllipsoidRhumbLine.prototype.findIntersectionWithLatitude = function(intersectionLatitude, result) {
+                Check.typeOf.number('intersectionLatitude', intersectionLatitude);
+        if (!defined(this._distance) || this._distance === 0.0) {
+            throw new DeveloperError('EllipsoidRhumbLine must have distinct start and end set.');
+        }
+        
+        var ellipticity = this._ellipticity;
+        var heading = this._heading;
+        var start = this._start;
+
+        // If start and end have same latitude, return undefined since it's either no intersection or infinite intersections
+        if (CesiumMath.equalsEpsilon(Math.abs(heading), CesiumMath.PI_OVER_TWO, CesiumMath.EPSILON8)) {
+            return;
+        }
+
+        // Can be solved using the same equations from interpolateUsingSurfaceDistance
+        var sigma1 = calculateSigma(ellipticity, start.latitude);
+        var sigma2 = calculateSigma(ellipticity, intersectionLatitude);
+        var deltaLongitude = Math.tan(heading) * (sigma2 - sigma1);
+        var longitude = CesiumMath.negativePiToPi(start.longitude + deltaLongitude);
+
+        if (defined(result)) {
+            result.longitude = longitude;
+            result.latitude = intersectionLatitude;
+            result.height = 0;
+
+            return result;
+        }
+
+        return new Cartographic(longitude, intersectionLatitude, 0);
+    };
+
+    return EllipsoidRhumbLine;
 });
 
 define('Core/EncodedCartesian3',[
@@ -23438,7 +24217,7 @@ define('Core/HeadingPitchRoll',[
         var numeratorHeading = 2 * (quaternion.w * quaternion.z + quaternion.x * quaternion.y);
         result.heading = -Math.atan2(numeratorHeading, denominatorHeading);
         result.roll = Math.atan2(numeratorRoll, denominatorRoll);
-        result.pitch = -Math.asin(test);
+        result.pitch = -CesiumMath.asinClamped(test);
         return result;
     };
 
@@ -27360,6 +28139,7 @@ define('Core/WebMercatorProjection',[
 
 define('Core/GroundPolylineGeometry',[
         './ApproximateTerrainHeights',
+        './ArcType',
         './arrayRemoveDuplicates',
         './BoundingSphere',
         './Cartesian3',
@@ -27373,6 +28153,7 @@ define('Core/GroundPolylineGeometry',[
         './defineProperties',
         './Ellipsoid',
         './EllipsoidGeodesic',
+        './EllipsoidRhumbLine',
         './EncodedCartesian3',
         './GeographicProjection',
         './Geometry',
@@ -27385,6 +28166,7 @@ define('Core/GroundPolylineGeometry',[
         './WebMercatorProjection'
     ], function(
         ApproximateTerrainHeights,
+        ArcType,
         arrayRemoveDuplicates,
         BoundingSphere,
         Cartesian3,
@@ -27398,6 +28180,7 @@ define('Core/GroundPolylineGeometry',[
         defineProperties,
         Ellipsoid,
         EllipsoidGeodesic,
+        EllipsoidRhumbLine,
         EncodedCartesian3,
         GeographicProjection,
         Geometry,
@@ -27430,7 +28213,7 @@ define('Core/GroundPolylineGeometry',[
     var WALL_INITIAL_MAX_HEIGHT = 1000.0;
 
     /**
-     * A description of a polyline on terrain. Only to be used with {@link GroundPolylinePrimitive}.
+     * A description of a polyline on terrain or 3D Tiles. Only to be used with {@link GroundPolylinePrimitive}.
      *
      * @alias GroundPolylineGeometry
      * @constructor
@@ -27440,6 +28223,7 @@ define('Core/GroundPolylineGeometry',[
      * @param {Number} [options.width=1.0] The screen space width in pixels.
      * @param {Number} [options.granularity=9999.0] The distance interval in meters used for interpolating options.points. Defaults to 9999.0 meters. Zero indicates no interpolation.
      * @param {Boolean} [options.loop=false] Whether during geometry creation a line segment will be added between the last and first line positions to make this Polyline a loop.
+     * @param {ArcType} [options.arcType=ArcType.GEODESIC] The type of line the polyline segments must follow. Valid options are {@link ArcType.GEODESIC} and {@link ArcType.RHUMB}.
      *
      * @exception {DeveloperError} At least two positions are required.
      *
@@ -27462,6 +28246,9 @@ define('Core/GroundPolylineGeometry',[
 
                 if ((!defined(positions)) || (positions.length < 2)) {
             throw new DeveloperError('At least two positions are required.');
+        }
+        if (defined(options.arcType) && options.arcType !== ArcType.GEODESIC && options.arcType !== ArcType.RHUMB) {
+            throw new DeveloperError('Valid options for arcType are ArcType.GEODESIC and ArcType.RHUMB.');
         }
         
         /**
@@ -27488,6 +28275,13 @@ define('Core/GroundPolylineGeometry',[
          */
         this.loop = defaultValue(options.loop, false);
 
+        /**
+         * The type of path the polyline must follow. Valid options are {@link ArcType.GEODESIC} and {@link ArcType.RHUMB}.
+         * @type {ArcType}
+         * @default ArcType.GEODESIC
+         */
+        this.arcType = defaultValue(options.arcType, ArcType.GEODESIC);
+
         this._ellipsoid = Ellipsoid.WGS84;
 
         // MapProjections can't be packed, so store the index to a known MapProjection.
@@ -27508,7 +28302,7 @@ define('Core/GroundPolylineGeometry',[
          */
         packedLength: {
             get: function() {
-                return 1.0 + this._positions.length * 3 + 1.0 + 1.0 + Ellipsoid.packedLength + 1.0 + 1.0;
+                return 1.0 + this._positions.length * 3 + 1.0 + 1.0 + 1.0 + Ellipsoid.packedLength + 1.0 + 1.0;
             }
         }
     });
@@ -27517,7 +28311,7 @@ define('Core/GroundPolylineGeometry',[
      * Set the GroundPolylineGeometry's projection and ellipsoid.
      * Used by GroundPolylinePrimitive to signal scene information to the geometry for generating 2D attributes.
      *
-     * @param {GroundPolylineGeometry} groundPolylineGeometry GroundPolylinGeometry describing a polyline on terrain.
+     * @param {GroundPolylineGeometry} groundPolylineGeometry GroundPolylinGeometry describing a polyline on terrain or 3D Tiles.
      * @param {Projection} mapProjection A MapProjection used for projecting cartographic coordinates to 2D.
      * @private
      */
@@ -27553,12 +28347,19 @@ define('Core/GroundPolylineGeometry',[
     var interpolatedBottomScratch = new Cartesian3();
     var interpolatedTopScratch = new Cartesian3();
     var interpolatedNormalScratch = new Cartesian3();
-    function interpolateSegment(start, end, minHeight, maxHeight, granularity, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray) {
+    function interpolateSegment(start, end, minHeight, maxHeight, granularity, arcType, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray) {
         if (granularity === 0.0) {
             return;
         }
-        var ellipsoidGeodesic = new EllipsoidGeodesic(start, end, ellipsoid);
-        var surfaceDistance = ellipsoidGeodesic.surfaceDistance;
+
+        var ellipsoidLine;
+        if (arcType === ArcType.GEODESIC) {
+            ellipsoidLine = new EllipsoidGeodesic(start, end, ellipsoid);
+        } else if (arcType === ArcType.RHUMB) {
+            ellipsoidLine = new EllipsoidRhumbLine(start, end, ellipsoid);
+        }
+
+        var surfaceDistance = ellipsoidLine.surfaceDistance;
         if (surfaceDistance < granularity) {
             return;
         }
@@ -27572,7 +28373,7 @@ define('Core/GroundPolylineGeometry',[
         var pointsToAdd = segments - 1;
         var packIndex = normalsArray.length;
         for (var i = 0; i < pointsToAdd; i++) {
-            var interpolatedCartographic = ellipsoidGeodesic.interpolateUsingSurfaceDistance(distanceFromStart, interpolatedCartographicScratch);
+            var interpolatedCartographic = ellipsoidLine.interpolateUsingSurfaceDistance(distanceFromStart, interpolatedCartographicScratch);
             var interpolatedBottom = getPosition(ellipsoid, interpolatedCartographic, minHeight, interpolatedBottomScratch);
             var interpolatedTop = getPosition(ellipsoid, interpolatedCartographic, maxHeight, interpolatedTopScratch);
 
@@ -27622,6 +28423,7 @@ define('Core/GroundPolylineGeometry',[
 
         array[index++] = value.granularity;
         array[index++] = value.loop ? 1.0 : 0.0;
+        array[index++] = value.arcType;
 
         Ellipsoid.pack(value._ellipsoid, array, index);
         index += Ellipsoid.packedLength;
@@ -27653,6 +28455,7 @@ define('Core/GroundPolylineGeometry',[
 
         var granularity = array[index++];
         var loop = array[index++] === 1.0;
+        var arcType = array[index++];
 
         var ellipsoid = Ellipsoid.unpack(array, index);
         index += Ellipsoid.packedLength;
@@ -27661,20 +28464,15 @@ define('Core/GroundPolylineGeometry',[
         var scene3DOnly = (array[index++] === 1.0);
 
         if (!defined(result)) {
-            var geometry = new GroundPolylineGeometry({
-                positions : positions,
-                granularity : granularity,
-                loop : loop,
-                ellipsoid : ellipsoid
+            result = new GroundPolylineGeometry({
+                positions : positions
             });
-            geometry._projectionIndex = projectionIndex;
-            geometry._scene3DOnly = scene3DOnly;
-            return geometry;
         }
 
         result._positions = positions;
         result.granularity = granularity;
         result.loop = loop;
+        result.arcType = arcType;
         result._ellipsoid = ellipsoid;
         result._projectionIndex = projectionIndex;
         result._scene3DOnly = scene3DOnly;
@@ -27738,9 +28536,12 @@ define('Core/GroundPolylineGeometry',[
     var nextBottomScratch = new Cartesian3();
     var vertexNormalScratch = new Cartesian3();
     var intersectionScratch = new Cartesian3();
+    var cartographicScratch0 = new Cartographic();
+    var cartographicScratch1 = new Cartographic();
+    var cartographicIntersectionScratch = new Cartographic();
     /**
      * Computes shadow volumes for the ground polyline, consisting of its vertices, indices, and a bounding sphere.
-     * Vertices are "fat," packing all the data needed in each volume to describe a line on terrain.
+     * Vertices are "fat," packing all the data needed in each volume to describe a line on terrain or 3D Tiles.
      * Should not be called independent of {@link GroundPolylinePrimitive}.
      *
      * @param {GroundPolylineGeometry} groundPolylineGeometry
@@ -27751,6 +28552,7 @@ define('Core/GroundPolylineGeometry',[
         var loop = groundPolylineGeometry.loop;
         var ellipsoid = groundPolylineGeometry._ellipsoid;
         var granularity = groundPolylineGeometry.granularity;
+        var arcType = groundPolylineGeometry.arcType;
         var projection = new PROJECTIONS[groundPolylineGeometry._projectionIndex](ellipsoid);
 
         var minHeight = WALL_INITIAL_MIN_HEIGHT;
@@ -27771,7 +28573,12 @@ define('Core/GroundPolylineGeometry',[
         // may get split by the plane of IDL + Prime Meridian.
         var p0;
         var p1;
+        var c0;
+        var c1;
+        var rhumbLine = new EllipsoidRhumbLine(undefined, undefined, ellipsoid);
         var intersection;
+        var intersectionCartographic;
+        var intersectionLongitude;
         var splitPositions = [positions[0]];
         for (i = 0; i < positionsLength - 1; i++) {
             p0 = positions[i];
@@ -27780,7 +28587,21 @@ define('Core/GroundPolylineGeometry',[
             if (defined(intersection) &&
                 !Cartesian3.equalsEpsilon(intersection, p0, CesiumMath.EPSILON7) &&
                 !Cartesian3.equalsEpsilon(intersection, p1, CesiumMath.EPSILON7)) {
-                splitPositions.push(Cartesian3.clone(intersection));
+                if (groundPolylineGeometry.arcType === ArcType.GEODESIC) {
+                    splitPositions.push(Cartesian3.clone(intersection));
+                } else if (groundPolylineGeometry.arcType === ArcType.RHUMB) {
+                    intersectionLongitude = ellipsoid.cartesianToCartographic(intersection, cartographicScratch0).longitude;
+                    c0 = ellipsoid.cartesianToCartographic(p0, cartographicScratch0);
+                    c1 = ellipsoid.cartesianToCartographic(p1, cartographicScratch1);
+                    rhumbLine.setEndPoints(c0, c1);
+                    intersectionCartographic = rhumbLine.findIntersectionWithLongitude(intersectionLongitude, cartographicIntersectionScratch);
+                    intersection = ellipsoid.cartographicToCartesian(intersectionCartographic, intersectionScratch);
+                    if (defined(intersection) &&
+                        !Cartesian3.equalsEpsilon(intersection, p0, CesiumMath.EPSILON7) &&
+                        !Cartesian3.equalsEpsilon(intersection, p1, CesiumMath.EPSILON7)) {
+                        splitPositions.push(Cartesian3.clone(intersection));
+                    }
+                }
             }
             splitPositions.push(p1);
         }
@@ -27792,7 +28613,21 @@ define('Core/GroundPolylineGeometry',[
             if (defined(intersection) &&
                 !Cartesian3.equalsEpsilon(intersection, p0, CesiumMath.EPSILON7) &&
                 !Cartesian3.equalsEpsilon(intersection, p1, CesiumMath.EPSILON7)) {
-                splitPositions.push(Cartesian3.clone(intersection));
+                if (groundPolylineGeometry.arcType === ArcType.GEODESIC) {
+                    splitPositions.push(Cartesian3.clone(intersection));
+                } else if (groundPolylineGeometry.arcType === ArcType.RHUMB) {
+                    intersectionLongitude = ellipsoid.cartesianToCartographic(intersection, cartographicScratch0).longitude;
+                    c0 = ellipsoid.cartesianToCartographic(p0, cartographicScratch0);
+                    c1 = ellipsoid.cartesianToCartographic(p1, cartographicScratch1);
+                    rhumbLine.setEndPoints(c0, c1);
+                    intersectionCartographic = rhumbLine.findIntersectionWithLongitude(intersectionLongitude, cartographicIntersectionScratch);
+                    intersection = ellipsoid.cartographicToCartesian(intersectionCartographic, intersectionScratch);
+                    if (defined(intersection) &&
+                        !Cartesian3.equalsEpsilon(intersection, p0, CesiumMath.EPSILON7) &&
+                        !Cartesian3.equalsEpsilon(intersection, p1, CesiumMath.EPSILON7)) {
+                        splitPositions.push(Cartesian3.clone(intersection));
+                    }
+                }
             }
         }
         var cartographicsLength = splitPositions.length;
@@ -27849,7 +28684,7 @@ define('Core/GroundPolylineGeometry',[
         cartographicsArray.push(startCartographic.latitude);
         cartographicsArray.push(startCartographic.longitude);
 
-        interpolateSegment(startCartographic, nextCartographic, minHeight, maxHeight, granularity, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
+        interpolateSegment(startCartographic, nextCartographic, minHeight, maxHeight, granularity, arcType, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
 
         // All inbetween points
         for (i = 1; i < cartographicsLength - 1; ++i) {
@@ -27868,7 +28703,7 @@ define('Core/GroundPolylineGeometry',[
             cartographicsArray.push(vertexCartographic.latitude);
             cartographicsArray.push(vertexCartographic.longitude);
 
-            interpolateSegment(cartographics[i], cartographics[i + 1], minHeight, maxHeight, granularity, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
+            interpolateSegment(cartographics[i], cartographics[i + 1], minHeight, maxHeight, granularity, arcType, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
         }
 
         // Last point - either loop or attach a normal "perpendicular" to the wall.
@@ -27896,7 +28731,7 @@ define('Core/GroundPolylineGeometry',[
         cartographicsArray.push(endCartographic.longitude);
 
         if (loop) {
-            interpolateSegment(endCartographic, startCartographic, minHeight, maxHeight, granularity, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
+            interpolateSegment(endCartographic, startCartographic, minHeight, maxHeight, granularity, arcType, ellipsoid, normalsArray, bottomPositionsArray, topPositionsArray, cartographicsArray);
             index = normalsArray.length;
             for (i = 0; i < 3; ++i) {
                 normalsArray[index + i] = normalsArray[i];

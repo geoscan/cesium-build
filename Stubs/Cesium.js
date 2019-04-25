@@ -5,6 +5,10 @@ define('Core/ApproximateTerrainHeights', function() {
     return Cesium['ApproximateTerrainHeights'];
 });
 
+define('Core/ArcType', function() {
+    return Cesium['ArcType'];
+});
+
 define('Core/AssociativeArray', function() {
     return Cesium['AssociativeArray'];
 });
@@ -219,6 +223,10 @@ define('Core/EllipsoidGeometry', function() {
 
 define('Core/EllipsoidOutlineGeometry', function() {
     return Cesium['EllipsoidOutlineGeometry'];
+});
+
+define('Core/EllipsoidRhumbLine', function() {
+    return Cesium['EllipsoidRhumbLine'];
 });
 
 define('Core/EllipsoidTangentPlane', function() {
@@ -731,6 +739,10 @@ define('Core/TerrainQuantization', function() {
 
 define('Core/TileAvailability', function() {
     return Cesium['TileAvailability'];
+});
+
+define('Core/TileEdge', function() {
+    return Cesium['TileEdge'];
 });
 
 define('Core/TileProviderError', function() {
@@ -2261,6 +2273,10 @@ define('Scene/SphereEmitter', function() {
     return Cesium['SphereEmitter'];
 });
 
+define('Scene/StencilConstants', function() {
+    return Cesium['StencilConstants'];
+});
+
 define('Scene/StencilFunction', function() {
     return Cesium['StencilFunction'];
 });
@@ -2279,6 +2295,10 @@ define('Scene/Sun', function() {
 
 define('Scene/SunPostProcess', function() {
     return Cesium['SunPostProcess'];
+});
+
+define('Scene/TerrainFillMesh', function() {
+    return Cesium['TerrainFillMesh'];
 });
 
 define('Scene/TerrainState', function() {
@@ -2321,12 +2341,12 @@ define('Scene/TileReplacementQueue', function() {
     return Cesium['TileReplacementQueue'];
 });
 
-define('Scene/TileState', function() {
-    return Cesium['TileState'];
+define('Scene/TileSelectionResult', function() {
+    return Cesium['TileSelectionResult'];
 });
 
-define('Scene/TileTerrain', function() {
-    return Cesium['TileTerrain'];
+define('Scene/TileState', function() {
+    return Cesium['TileState'];
 });
 
 define('Scene/Tileset3DTileContent', function() {
@@ -2775,6 +2795,10 @@ define('Shaders/Appearances/TexturedMaterialAppearanceVS', function() {
 
 define('Shaders/Builtin/CzmBuiltins', function() {
     return Cesium['CzmBuiltins'];
+});
+
+define('Shaders/Materials/AspectRampMaterial', function() {
+    return Cesium['AspectRampMaterial'];
 });
 
 define('Shaders/Materials/BumpMapMaterial', function() {
