@@ -1717,6 +1717,14 @@ define('Scene/Cesium3DTileOptimizations', function() {
     return Cesium['Cesium3DTileOptimizations'];
 });
 
+define('Scene/Cesium3DTilePass', function() {
+    return Cesium['Cesium3DTilePass'];
+});
+
+define('Scene/Cesium3DTilePassState', function() {
+    return Cesium['Cesium3DTilePassState'];
+});
+
 define('Scene/Cesium3DTilePointFeature', function() {
     return Cesium['Cesium3DTilePointFeature'];
 });
@@ -1737,12 +1745,16 @@ define('Scene/Cesium3DTileset', function() {
     return Cesium['Cesium3DTileset'];
 });
 
-define('Scene/Cesium3DTilesetAsyncTraversal', function() {
-    return Cesium['Cesium3DTilesetAsyncTraversal'];
-});
-
 define('Scene/Cesium3DTilesetCache', function() {
     return Cesium['Cesium3DTilesetCache'];
+});
+
+define('Scene/Cesium3DTilesetHeatmap', function() {
+    return Cesium['Cesium3DTilesetHeatmap'];
+});
+
+define('Scene/Cesium3DTilesetMostDetailedTraversal', function() {
+    return Cesium['Cesium3DTilesetMostDetailedTraversal'];
 });
 
 define('Scene/Cesium3DTilesetStatistics', function() {
@@ -2653,8 +2665,8 @@ define('ThirdParty/kdbush', function() {
     return Cesium['kdbush'];
 });
 
-define('ThirdParty/knockout-3.4.2', function() {
-    return Cesium['knockout-3.4.2'];
+define('ThirdParty/knockout-3.5.0', function() {
+    return Cesium['knockout-3.5.0'];
 });
 
 define('ThirdParty/knockout-es5', function() {
