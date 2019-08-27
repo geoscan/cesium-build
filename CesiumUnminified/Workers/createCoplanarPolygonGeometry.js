@@ -776,6 +776,13 @@ define('Core/Math',[
     CesiumMath.SIXTY_FOUR_KILOBYTES = 64 * 1024;
 
     /**
+     * 4 * 1024 * 1024 * 1024
+     * @type {Number}
+     * @constant
+     */
+    CesiumMath.FOUR_GIGABYTES = 4 * 1024 * 1024 * 1024;
+
+    /**
      * Returns the sign of the value; 1 if the value is positive, -1 if the value is
      * negative, or 0 if the value is 0.
      *
@@ -1276,7 +1283,9 @@ define('Core/Math',[
         if (n >= length) {
             var sum = factorials[length - 1];
             for (var i = length; i <= n; i++) {
-                factorials.push(sum * i);
+                var next = sum * i;
+                factorials.push(next);
+                sum = next;
             }
         }
         return factorials[n];
@@ -1827,7 +1836,7 @@ define('Core/Cartesian2',[
      * Flattens an array of Cartesian2s into and array of components.
      *
      * @param {Cartesian2[]} array The array of cartesians to pack.
-     * @param {Number[]} result The array onto which to store the result.
+     * @param {Number[]} [result] The array onto which to store the result.
      * @returns {Number[]} The packed array.
      */
     Cartesian2.packArray = function(array, result) {
@@ -1850,7 +1859,7 @@ define('Core/Cartesian2',[
      * Unpacks an array of cartesian components into and array of Cartesian2s.
      *
      * @param {Number[]} array The array of components to unpack.
-     * @param {Cartesian2[]} result The array onto which to store the result.
+     * @param {Cartesian2[]} [result] The array onto which to store the result.
      * @returns {Cartesian2[]} The unpacked array.
      */
     Cartesian2.unpackArray = function(array, result) {
@@ -2550,7 +2559,7 @@ define('Core/Cartesian3',[
      * Flattens an array of Cartesian3s into an array of components.
      *
      * @param {Cartesian3[]} array The array of cartesians to pack.
-     * @param {Number[]} result The array onto which to store the result.
+     * @param {Number[]} [result] The array onto which to store the result.
      * @returns {Number[]} The packed array.
      */
     Cartesian3.packArray = function(array, result) {
@@ -2573,7 +2582,7 @@ define('Core/Cartesian3',[
      * Unpacks an array of cartesian components into an array of Cartesian3s.
      *
      * @param {Number[]} array The array of components to unpack.
-     * @param {Cartesian3[]} result The array onto which to store the result.
+     * @param {Cartesian3[]} [result] The array onto which to store the result.
      * @returns {Cartesian3[]} The unpacked array.
      */
     Cartesian3.unpackArray = function(array, result) {
@@ -7499,7 +7508,7 @@ define('Core/Cartesian4',[
      * Flattens an array of Cartesian4s into and array of components.
      *
      * @param {Cartesian4[]} array The array of cartesians to pack.
-     * @param {Number[]} result The array onto which to store the result.
+     * @param {Number[]} [result] The array onto which to store the result.
      * @returns {Number[]} The packed array.
      */
     Cartesian4.packArray = function(array, result) {
@@ -7522,7 +7531,7 @@ define('Core/Cartesian4',[
      * Unpacks an array of cartesian components into and array of Cartesian4s.
      *
      * @param {Number[]} array The array of components to unpack.
-     * @param {Cartesian4[]} result The array onto which to store the result.
+     * @param {Cartesian4[]} [result] The array onto which to store the result.
      * @returns {Cartesian4[]} The unpacked array.
      */
     Cartesian4.unpackArray = function(array, result) {
@@ -20509,7 +20518,6 @@ define('Core/Resource',[
         './defineProperties',
         './DeveloperError',
         './freezeObject',
-        './FeatureDetection',
         './getAbsoluteUri',
         './getBaseUri',
         './getExtensionFromUri',
@@ -20537,7 +20545,6 @@ define('Core/Resource',[
         defineProperties,
         DeveloperError,
         freezeObject,
-        FeatureDetection,
         getAbsoluteUri,
         getBaseUri,
         getExtensionFromUri,
@@ -21426,9 +21433,11 @@ define('Core/Resource',[
                 if (!defined(image)) {
                     return;
                 }
-                // This is because the blob object is needed for DiscardMissingTileImagePolicy
-                // See https://github.com/AnalyticalGraphicsInc/cesium/issues/1353
+
+                // The blob object may be needed for use by a TileDiscardPolicy,
+                // so attach it to the image.
                 image.blob = generatedBlob;
+
                 if (useImageBitmap) {
                     return image;
                 }
@@ -21440,6 +21449,12 @@ define('Core/Resource',[
                 if (defined(generatedBlobResource)) {
                     window.URL.revokeObjectURL(generatedBlobResource.url);
                 }
+
+                // If the blob load succeeded but the image decode failed, attach the blob
+                // to the error object for use by a TileDiscardPolicy.
+                // In particular, BingMapsImageryProvider uses this to detect the
+                // zero-length response that is returned when a tile is not available.
+                error.blob = generatedBlob;
 
                 return when.reject(error);
             });
@@ -21472,7 +21487,6 @@ define('Core/Resource',[
             }
 
             var deferred = when.defer();
-
             Resource._Implementations.createImage(url, crossOrigin, deferred, flipY, preferImageBitmap);
 
             return deferred.promise;
@@ -22358,24 +22372,18 @@ define('Core/Resource',[
 
                 return Resource.fetchBlob({
                     url: url
-                });
-            })
-            .then(function(blob) {
-                if (!defined(blob)) {
-                    return;
-                }
+                })
+                .then(function(blob) {
+                    if (!defined(blob)) {
+                        deferred.reject(new RuntimeError('Successfully retrieved ' + url + ' but it contained no content.'));
+                        return;
+                    }
 
-                return Resource.createImageBitmapFromBlob(blob, {
-                    flipY: flipY,
-                    premultiplyAlpha: false
-                });
-            })
-            .then(function(imageBitmap) {
-                if (!defined(imageBitmap)) {
-                    return;
-                }
-
-                deferred.resolve(imageBitmap);
+                    return Resource.createImageBitmapFromBlob(blob, {
+                        flipY: flipY,
+                        premultiplyAlpha: false
+                    });
+                }).then(deferred.resolve);
             })
             .otherwise(deferred.reject);
     };
