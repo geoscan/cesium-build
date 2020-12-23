@@ -1203,7 +1203,7 @@ define('Core/PixelFormat',[
             var numberOfComponents = PixelFormat.componentsLength(pixelFormat);
             var textureWidth = width * numberOfComponents;
             for (var i = 0; i < height; ++i) {
-                var row = i * height * numberOfComponents;
+                var row = i * width * numberOfComponents;
                 var flippedRow = (height - i - 1) * height * numberOfComponents;
                 for (var j = 0; j < textureWidth; ++j) {
                     flipped[flippedRow + j] = bufferView[row + j];
