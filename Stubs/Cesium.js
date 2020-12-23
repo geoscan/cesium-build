@@ -1,10 +1,6 @@
 /*global define,Cesium*/
 (function() {
 'use strict';
-define('Core/appendForwardSlash', function() {
-    return Cesium['appendForwardSlash'];
-});
-
 define('Core/ApproximateTerrainHeights', function() {
     return Cesium['ApproximateTerrainHeights'];
 });
@@ -17,18 +13,6 @@ define('Core/ArcType', function() {
     return Cesium['ArcType'];
 });
 
-define('Core/arrayFill', function() {
-    return Cesium['arrayFill'];
-});
-
-define('Core/arrayRemoveDuplicates', function() {
-    return Cesium['arrayRemoveDuplicates'];
-});
-
-define('Core/arraySlice', function() {
-    return Cesium['arraySlice'];
-});
-
 define('Core/AssociativeArray', function() {
     return Cesium['AssociativeArray'];
 });
@@ -39,14 +23,6 @@ define('Core/AttributeCompression', function() {
 
 define('Core/AxisAlignedBoundingBox', function() {
     return Cesium['AxisAlignedBoundingBox'];
-});
-
-define('Core/barycentricCoordinates', function() {
-    return Cesium['barycentricCoordinates'];
-});
-
-define('Core/binarySearch', function() {
-    return Cesium['binarySearch'];
 });
 
 define('Core/BingMapsApi', function() {
@@ -71,14 +47,6 @@ define('Core/BoxGeometry', function() {
 
 define('Core/BoxOutlineGeometry', function() {
     return Cesium['BoxOutlineGeometry'];
-});
-
-define('Core/buildModuleUrl', function() {
-    return Cesium['buildModuleUrl'];
-});
-
-define('Core/cancelAnimationFrame', function() {
-    return Cesium['cancelAnimationFrame'];
 });
 
 define('Core/Cartesian2', function() {
@@ -133,20 +101,12 @@ define('Core/ClockStep', function() {
     return Cesium['ClockStep'];
 });
 
-define('Core/clone', function() {
-    return Cesium['clone'];
-});
-
 define('Core/Color', function() {
     return Cesium['Color'];
 });
 
 define('Core/ColorGeometryInstanceAttribute', function() {
     return Cesium['ColorGeometryInstanceAttribute'];
-});
-
-define('Core/combine', function() {
-    return Cesium['combine'];
 });
 
 define('Core/ComponentDatatype', function() {
@@ -185,14 +145,6 @@ define('Core/CorridorOutlineGeometry', function() {
     return Cesium['CorridorOutlineGeometry'];
 });
 
-define('Core/createGuid', function() {
-    return Cesium['createGuid'];
-});
-
-define('Core/createWorldTerrain', function() {
-    return Cesium['createWorldTerrain'];
-});
-
 define('Core/Credit', function() {
     return Cesium['Credit'];
 });
@@ -217,32 +169,8 @@ define('Core/CylinderOutlineGeometry', function() {
     return Cesium['CylinderOutlineGeometry'];
 });
 
-define('Core/decodeGoogleEarthEnterpriseData', function() {
-    return Cesium['decodeGoogleEarthEnterpriseData'];
-});
-
 define('Core/DefaultProxy', function() {
     return Cesium['DefaultProxy'];
-});
-
-define('Core/defaultValue', function() {
-    return Cesium['defaultValue'];
-});
-
-define('Core/defined', function() {
-    return Cesium['defined'];
-});
-
-define('Core/defineProperties', function() {
-    return Cesium['defineProperties'];
-});
-
-define('Core/deprecationWarning', function() {
-    return Cesium['deprecationWarning'];
-});
-
-define('Core/destroyObject', function() {
-    return Cesium['destroyObject'];
 });
 
 define('Core/DeveloperError', function() {
@@ -289,10 +217,6 @@ define('Core/Ellipsoid', function() {
     return Cesium['Ellipsoid'];
 });
 
-define('Core/EllipsoidalOccluder', function() {
-    return Cesium['EllipsoidalOccluder'];
-});
-
 define('Core/EllipsoidGeodesic', function() {
     return Cesium['EllipsoidGeodesic'];
 });
@@ -317,6 +241,10 @@ define('Core/EllipsoidTerrainProvider', function() {
     return Cesium['EllipsoidTerrainProvider'];
 });
 
+define('Core/EllipsoidalOccluder', function() {
+    return Cesium['EllipsoidalOccluder'];
+});
+
 define('Core/EncodedCartesian3', function() {
     return Cesium['EncodedCartesian3'];
 });
@@ -337,14 +265,6 @@ define('Core/FeatureDetection', function() {
     return Cesium['FeatureDetection'];
 });
 
-define('Core/formatError', function() {
-    return Cesium['formatError'];
-});
-
-define('Core/freezeObject', function() {
-    return Cesium['freezeObject'];
-});
-
 define('Core/FrustumGeometry', function() {
     return Cesium['FrustumGeometry'];
 });
@@ -357,12 +277,12 @@ define('Core/Fullscreen', function() {
     return Cesium['Fullscreen'];
 });
 
-define('Core/GeocoderService', function() {
-    return Cesium['GeocoderService'];
-});
-
 define('Core/GeocodeType', function() {
     return Cesium['GeocodeType'];
+});
+
+define('Core/GeocoderService', function() {
+    return Cesium['GeocoderService'];
 });
 
 define('Core/GeographicProjection', function() {
@@ -403,38 +323,6 @@ define('Core/GeometryPipeline', function() {
 
 define('Core/GeometryType', function() {
     return Cesium['GeometryType'];
-});
-
-define('Core/getAbsoluteUri', function() {
-    return Cesium['getAbsoluteUri'];
-});
-
-define('Core/getBaseUri', function() {
-    return Cesium['getBaseUri'];
-});
-
-define('Core/getExtensionFromUri', function() {
-    return Cesium['getExtensionFromUri'];
-});
-
-define('Core/getFilenameFromUri', function() {
-    return Cesium['getFilenameFromUri'];
-});
-
-define('Core/getImagePixels', function() {
-    return Cesium['getImagePixels'];
-});
-
-define('Core/getMagic', function() {
-    return Cesium['getMagic'];
-});
-
-define('Core/getStringFromTypedArray', function() {
-    return Cesium['getStringFromTypedArray'];
-});
-
-define('Core/getTimestamp', function() {
-    return Cesium['getTimestamp'];
 });
 
 define('Core/GoogleEarthEnterpriseMetadata', function() {
@@ -525,12 +413,12 @@ define('Core/Intersect', function() {
     return Cesium['Intersect'];
 });
 
-define('Core/Intersections2D', function() {
-    return Cesium['Intersections2D'];
-});
-
 define('Core/IntersectionTests', function() {
     return Cesium['IntersectionTests'];
+});
+
+define('Core/Intersections2D', function() {
+    return Cesium['Intersections2D'];
 });
 
 define('Core/Interval', function() {
@@ -547,30 +435,6 @@ define('Core/IonGeocoderService', function() {
 
 define('Core/IonResource', function() {
     return Cesium['IonResource'];
-});
-
-define('Core/isArray', function() {
-    return Cesium['isArray'];
-});
-
-define('Core/isBitSet', function() {
-    return Cesium['isBitSet'];
-});
-
-define('Core/isBlobUri', function() {
-    return Cesium['isBlobUri'];
-});
-
-define('Core/isCrossOriginUrl', function() {
-    return Cesium['isCrossOriginUrl'];
-});
-
-define('Core/isDataUri', function() {
-    return Cesium['isDataUri'];
-});
-
-define('Core/isLeapYear', function() {
-    return Cesium['isLeapYear'];
 });
 
 define('Core/Iso8601', function() {
@@ -601,32 +465,16 @@ define('Core/LinearSpline', function() {
     return Cesium['LinearSpline'];
 });
 
-define('Core/loadAndExecuteScript', function() {
-    return Cesium['loadAndExecuteScript'];
-});
-
-define('Core/loadCRN', function() {
-    return Cesium['loadCRN'];
-});
-
-define('Core/loadImageFromTypedArray', function() {
-    return Cesium['loadImageFromTypedArray'];
-});
-
-define('Core/loadKTX', function() {
-    return Cesium['loadKTX'];
-});
-
 define('Core/ManagedArray', function() {
     return Cesium['ManagedArray'];
 });
 
-define('Core/MapboxApi', function() {
-    return Cesium['MapboxApi'];
-});
-
 define('Core/MapProjection', function() {
     return Cesium['MapProjection'];
+});
+
+define('Core/MapboxApi', function() {
+    return Cesium['MapboxApi'];
 });
 
 define('Core/Math', function() {
@@ -645,16 +493,8 @@ define('Core/Matrix4', function() {
     return Cesium['Matrix4'];
 });
 
-define('Core/mergeSort', function() {
-    return Cesium['mergeSort'];
-});
-
 define('Core/NearFarScalar', function() {
     return Cesium['NearFarScalar'];
-});
-
-define('Core/objectToQuery', function() {
-    return Cesium['objectToQuery'];
 });
 
 define('Core/Occluder', function() {
@@ -663,10 +503,6 @@ define('Core/Occluder', function() {
 
 define('Core/OffsetGeometryInstanceAttribute', function() {
     return Cesium['OffsetGeometryInstanceAttribute'];
-});
-
-define('Core/oneTimeWarning', function() {
-    return Cesium['oneTimeWarning'];
 });
 
 define('Core/OpenCageGeocoderService', function() {
@@ -691,10 +527,6 @@ define('Core/Packable', function() {
 
 define('Core/PackableForInterpolation', function() {
     return Cesium['PackableForInterpolation'];
-});
-
-define('Core/parseResponseHeaders', function() {
-    return Cesium['parseResponseHeaders'];
 });
 
 define('Core/PeliasGeocoderService', function() {
@@ -727,10 +559,6 @@ define('Core/PlaneGeometry', function() {
 
 define('Core/PlaneOutlineGeometry', function() {
     return Cesium['PlaneOutlineGeometry'];
-});
-
-define('Core/pointInsideTriangle', function() {
-    return Cesium['pointInsideTriangle'];
 });
 
 define('Core/PolygonGeometry', function() {
@@ -797,10 +625,6 @@ define('Core/QuaternionSpline', function() {
     return Cesium['QuaternionSpline'];
 });
 
-define('Core/queryToObject', function() {
-    return Cesium['queryToObject'];
-});
-
 define('Core/Queue', function() {
     return Cesium['Queue'];
 });
@@ -837,10 +661,6 @@ define('Core/Request', function() {
     return Cesium['Request'];
 });
 
-define('Core/requestAnimationFrame', function() {
-    return Cesium['requestAnimationFrame'];
-});
-
 define('Core/RequestErrorEvent', function() {
     return Cesium['RequestErrorEvent'];
 });
@@ -863,18 +683,6 @@ define('Core/Resource', function() {
 
 define('Core/RuntimeError', function() {
     return Cesium['RuntimeError'];
-});
-
-define('Core/sampleTerrain', function() {
-    return Cesium['sampleTerrain'];
-});
-
-define('Core/sampleTerrainMostDetailed', function() {
-    return Cesium['sampleTerrainMostDetailed'];
-});
-
-define('Core/scaleToGeodeticSurface', function() {
-    return Cesium['scaleToGeodeticSurface'];
 });
 
 define('Core/ScreenSpaceEventHandler', function() {
@@ -911,10 +719,6 @@ define('Core/Spherical', function() {
 
 define('Core/Spline', function() {
     return Cesium['Spline'];
-});
-
-define('Core/subdivideArray', function() {
-    return Cesium['subdivideArray'];
 });
 
 define('Core/TaskProcessor', function() {
@@ -993,6 +797,10 @@ define('Core/TrustedServers', function() {
     return Cesium['TrustedServers'];
 });
 
+define('Core/VRTheWorldTerrainProvider', function() {
+    return Cesium['VRTheWorldTerrainProvider'];
+});
+
 define('Core/VertexFormat', function() {
     return Cesium['VertexFormat'];
 });
@@ -1003,10 +811,6 @@ define('Core/VideoSynchronizer', function() {
 
 define('Core/Visibility', function() {
     return Cesium['Visibility'];
-});
-
-define('Core/VRTheWorldTerrainProvider', function() {
-    return Cesium['VRTheWorldTerrainProvider'];
 });
 
 define('Core/WallGeometry', function() {
@@ -1025,10 +829,6 @@ define('Core/WebGLConstants', function() {
     return Cesium['WebGLConstants'];
 });
 
-define('Core/webGLConstantToGlslType', function() {
-    return Cesium['webGLConstantToGlslType'];
-});
-
 define('Core/WebMercatorProjection', function() {
     return Cesium['WebMercatorProjection'];
 });
@@ -1043,6 +843,206 @@ define('Core/WeightSpline', function() {
 
 define('Core/WindingOrder', function() {
     return Cesium['WindingOrder'];
+});
+
+define('Core/appendForwardSlash', function() {
+    return Cesium['appendForwardSlash'];
+});
+
+define('Core/arrayFill', function() {
+    return Cesium['arrayFill'];
+});
+
+define('Core/arrayRemoveDuplicates', function() {
+    return Cesium['arrayRemoveDuplicates'];
+});
+
+define('Core/arraySlice', function() {
+    return Cesium['arraySlice'];
+});
+
+define('Core/barycentricCoordinates', function() {
+    return Cesium['barycentricCoordinates'];
+});
+
+define('Core/binarySearch', function() {
+    return Cesium['binarySearch'];
+});
+
+define('Core/buildModuleUrl', function() {
+    return Cesium['buildModuleUrl'];
+});
+
+define('Core/cancelAnimationFrame', function() {
+    return Cesium['cancelAnimationFrame'];
+});
+
+define('Core/clone', function() {
+    return Cesium['clone'];
+});
+
+define('Core/combine', function() {
+    return Cesium['combine'];
+});
+
+define('Core/createGuid', function() {
+    return Cesium['createGuid'];
+});
+
+define('Core/createWorldTerrain', function() {
+    return Cesium['createWorldTerrain'];
+});
+
+define('Core/decodeGoogleEarthEnterpriseData', function() {
+    return Cesium['decodeGoogleEarthEnterpriseData'];
+});
+
+define('Core/defaultValue', function() {
+    return Cesium['defaultValue'];
+});
+
+define('Core/defineProperties', function() {
+    return Cesium['defineProperties'];
+});
+
+define('Core/defined', function() {
+    return Cesium['defined'];
+});
+
+define('Core/deprecationWarning', function() {
+    return Cesium['deprecationWarning'];
+});
+
+define('Core/destroyObject', function() {
+    return Cesium['destroyObject'];
+});
+
+define('Core/formatError', function() {
+    return Cesium['formatError'];
+});
+
+define('Core/freezeObject', function() {
+    return Cesium['freezeObject'];
+});
+
+define('Core/getAbsoluteUri', function() {
+    return Cesium['getAbsoluteUri'];
+});
+
+define('Core/getBaseUri', function() {
+    return Cesium['getBaseUri'];
+});
+
+define('Core/getExtensionFromUri', function() {
+    return Cesium['getExtensionFromUri'];
+});
+
+define('Core/getFilenameFromUri', function() {
+    return Cesium['getFilenameFromUri'];
+});
+
+define('Core/getImagePixels', function() {
+    return Cesium['getImagePixels'];
+});
+
+define('Core/getMagic', function() {
+    return Cesium['getMagic'];
+});
+
+define('Core/getStringFromTypedArray', function() {
+    return Cesium['getStringFromTypedArray'];
+});
+
+define('Core/getTimestamp', function() {
+    return Cesium['getTimestamp'];
+});
+
+define('Core/isArray', function() {
+    return Cesium['isArray'];
+});
+
+define('Core/isBitSet', function() {
+    return Cesium['isBitSet'];
+});
+
+define('Core/isBlobUri', function() {
+    return Cesium['isBlobUri'];
+});
+
+define('Core/isCrossOriginUrl', function() {
+    return Cesium['isCrossOriginUrl'];
+});
+
+define('Core/isDataUri', function() {
+    return Cesium['isDataUri'];
+});
+
+define('Core/isLeapYear', function() {
+    return Cesium['isLeapYear'];
+});
+
+define('Core/loadAndExecuteScript', function() {
+    return Cesium['loadAndExecuteScript'];
+});
+
+define('Core/loadCRN', function() {
+    return Cesium['loadCRN'];
+});
+
+define('Core/loadImageFromTypedArray', function() {
+    return Cesium['loadImageFromTypedArray'];
+});
+
+define('Core/loadKTX', function() {
+    return Cesium['loadKTX'];
+});
+
+define('Core/mergeSort', function() {
+    return Cesium['mergeSort'];
+});
+
+define('Core/objectToQuery', function() {
+    return Cesium['objectToQuery'];
+});
+
+define('Core/oneTimeWarning', function() {
+    return Cesium['oneTimeWarning'];
+});
+
+define('Core/parseResponseHeaders', function() {
+    return Cesium['parseResponseHeaders'];
+});
+
+define('Core/pointInsideTriangle', function() {
+    return Cesium['pointInsideTriangle'];
+});
+
+define('Core/queryToObject', function() {
+    return Cesium['queryToObject'];
+});
+
+define('Core/requestAnimationFrame', function() {
+    return Cesium['requestAnimationFrame'];
+});
+
+define('Core/sampleTerrain', function() {
+    return Cesium['sampleTerrain'];
+});
+
+define('Core/sampleTerrainMostDetailed', function() {
+    return Cesium['sampleTerrainMostDetailed'];
+});
+
+define('Core/scaleToGeodeticSurface', function() {
+    return Cesium['scaleToGeodeticSurface'];
+});
+
+define('Core/subdivideArray', function() {
+    return Cesium['subdivideArray'];
+});
+
+define('Core/webGLConstantToGlslType', function() {
+    return Cesium['webGLConstantToGlslType'];
 });
 
 define('Core/wrapFunction', function() {
@@ -1117,18 +1117,6 @@ define('DataSources/CorridorGraphics', function() {
     return Cesium['CorridorGraphics'];
 });
 
-define('DataSources/createMaterialPropertyDescriptor', function() {
-    return Cesium['createMaterialPropertyDescriptor'];
-});
-
-define('DataSources/createPropertyDescriptor', function() {
-    return Cesium['createPropertyDescriptor'];
-});
-
-define('DataSources/createRawPropertyDescriptor', function() {
-    return Cesium['createRawPropertyDescriptor'];
-});
-
 define('DataSources/CustomDataSource', function() {
     return Cesium['CustomDataSource'];
 });
@@ -1201,10 +1189,6 @@ define('DataSources/EntityView', function() {
     return Cesium['EntityView'];
 });
 
-define('DataSources/exportKml', function() {
-    return Cesium['exportKml'];
-});
-
 define('DataSources/GeoJsonDataSource', function() {
     return Cesium['GeoJsonDataSource'];
 });
@@ -1223,10 +1207,6 @@ define('DataSources/GridMaterialProperty', function() {
 
 define('DataSources/GroundGeometryUpdater', function() {
     return Cesium['GroundGeometryUpdater'];
-});
-
-define('DataSources/heightReferenceOnEntityPropertyChanged', function() {
-    return Cesium['heightReferenceOnEntityPropertyChanged'];
 });
 
 define('DataSources/ImageMaterialProperty', function() {
@@ -1461,6 +1441,26 @@ define('DataSources/WallGraphics', function() {
     return Cesium['WallGraphics'];
 });
 
+define('DataSources/createMaterialPropertyDescriptor', function() {
+    return Cesium['createMaterialPropertyDescriptor'];
+});
+
+define('DataSources/createPropertyDescriptor', function() {
+    return Cesium['createPropertyDescriptor'];
+});
+
+define('DataSources/createRawPropertyDescriptor', function() {
+    return Cesium['createRawPropertyDescriptor'];
+});
+
+define('DataSources/exportKml', function() {
+    return Cesium['exportKml'];
+});
+
+define('DataSources/heightReferenceOnEntityPropertyChanged', function() {
+    return Cesium['heightReferenceOnEntityPropertyChanged'];
+});
+
 define('Renderer/AutomaticUniforms', function() {
     return Cesium['AutomaticUniforms'];
 });
@@ -1493,14 +1493,6 @@ define('Renderer/ContextLimits', function() {
     return Cesium['ContextLimits'];
 });
 
-define('Renderer/createUniform', function() {
-    return Cesium['createUniform'];
-});
-
-define('Renderer/createUniformArray', function() {
-    return Cesium['createUniformArray'];
-});
-
 define('Renderer/CubeMap', function() {
     return Cesium['CubeMap'];
 });
@@ -1517,20 +1509,8 @@ define('Renderer/Framebuffer', function() {
     return Cesium['Framebuffer'];
 });
 
-define('Renderer/freezeRenderState', function() {
-    return Cesium['freezeRenderState'];
-});
-
-define('Renderer/loadCubeMap', function() {
-    return Cesium['loadCubeMap'];
-});
-
 define('Renderer/MipmapHint', function() {
     return Cesium['MipmapHint'];
-});
-
-define('Renderer/modernizeShader', function() {
-    return Cesium['modernizeShader'];
 });
 
 define('Renderer/Pass', function() {
@@ -1545,16 +1525,16 @@ define('Renderer/PixelDatatype', function() {
     return Cesium['PixelDatatype'];
 });
 
+define('Renderer/RenderState', function() {
+    return Cesium['RenderState'];
+});
+
 define('Renderer/Renderbuffer', function() {
     return Cesium['Renderbuffer'];
 });
 
 define('Renderer/RenderbufferFormat', function() {
     return Cesium['RenderbufferFormat'];
-});
-
-define('Renderer/RenderState', function() {
-    return Cesium['RenderState'];
 });
 
 define('Renderer/Sampler', function() {
@@ -1605,6 +1585,26 @@ define('Renderer/VertexArrayFacade', function() {
     return Cesium['VertexArrayFacade'];
 });
 
+define('Renderer/createUniform', function() {
+    return Cesium['createUniform'];
+});
+
+define('Renderer/createUniformArray', function() {
+    return Cesium['createUniformArray'];
+});
+
+define('Renderer/freezeRenderState', function() {
+    return Cesium['freezeRenderState'];
+});
+
+define('Renderer/loadCubeMap', function() {
+    return Cesium['loadCubeMap'];
+});
+
+define('Renderer/modernizeShader', function() {
+    return Cesium['modernizeShader'];
+});
+
 define('Scene/Appearance', function() {
     return Cesium['Appearance'];
 });
@@ -1625,12 +1625,12 @@ define('Scene/Axis', function() {
     return Cesium['Axis'];
 });
 
-define('Scene/Batched3DModel3DTileContent', function() {
-    return Cesium['Batched3DModel3DTileContent'];
-});
-
 define('Scene/BatchTable', function() {
     return Cesium['BatchTable'];
+});
+
+define('Scene/Batched3DModel3DTileContent', function() {
+    return Cesium['Batched3DModel3DTileContent'];
 });
 
 define('Scene/Billboard', function() {
@@ -1657,12 +1657,12 @@ define('Scene/BlendFunction', function() {
     return Cesium['BlendFunction'];
 });
 
-define('Scene/BlendingState', function() {
-    return Cesium['BlendingState'];
-});
-
 define('Scene/BlendOption', function() {
     return Cesium['BlendOption'];
+});
+
+define('Scene/BlendingState', function() {
+    return Cesium['BlendingState'];
 });
 
 define('Scene/BoxEmitter', function() {
@@ -1745,6 +1745,14 @@ define('Scene/Cesium3DTileRefine', function() {
     return Cesium['Cesium3DTileRefine'];
 });
 
+define('Scene/Cesium3DTileStyle', function() {
+    return Cesium['Cesium3DTileStyle'];
+});
+
+define('Scene/Cesium3DTileStyleEngine', function() {
+    return Cesium['Cesium3DTileStyleEngine'];
+});
+
 define('Scene/Cesium3DTileset', function() {
     return Cesium['Cesium3DTileset'];
 });
@@ -1767,14 +1775,6 @@ define('Scene/Cesium3DTilesetStatistics', function() {
 
 define('Scene/Cesium3DTilesetTraversal', function() {
     return Cesium['Cesium3DTilesetTraversal'];
-});
-
-define('Scene/Cesium3DTileStyle', function() {
-    return Cesium['Cesium3DTileStyle'];
-});
-
-define('Scene/Cesium3DTileStyleEngine', function() {
-    return Cesium['Cesium3DTileStyleEngine'];
 });
 
 define('Scene/CircleEmitter', function() {
@@ -1809,36 +1809,12 @@ define('Scene/Composite3DTileContent', function() {
     return Cesium['Composite3DTileContent'];
 });
 
-define('Scene/computeFlyToLocationForRectangle', function() {
-    return Cesium['computeFlyToLocationForRectangle'];
-});
-
 define('Scene/ConditionsExpression', function() {
     return Cesium['ConditionsExpression'];
 });
 
 define('Scene/ConeEmitter', function() {
     return Cesium['ConeEmitter'];
-});
-
-define('Scene/createBillboardPointCallback', function() {
-    return Cesium['createBillboardPointCallback'];
-});
-
-define('Scene/createOpenStreetMapImageryProvider', function() {
-    return Cesium['createOpenStreetMapImageryProvider'];
-});
-
-define('Scene/createTangentSpaceDebugPrimitive', function() {
-    return Cesium['createTangentSpaceDebugPrimitive'];
-});
-
-define('Scene/createTileMapServiceImageryProvider', function() {
-    return Cesium['createTileMapServiceImageryProvider'];
-});
-
-define('Scene/createWorldImagery', function() {
-    return Cesium['createWorldImagery'];
 });
 
 define('Scene/CreditDisplay', function() {
@@ -1927,18 +1903,6 @@ define('Scene/FrustumCommands', function() {
 
 define('Scene/Geometry3DTileContent', function() {
     return Cesium['Geometry3DTileContent'];
-});
-
-define('Scene/getBinaryAccessor', function() {
-    return Cesium['getBinaryAccessor'];
-});
-
-define('Scene/getClipAndStyleCode', function() {
-    return Cesium['getClipAndStyleCode'];
-});
-
-define('Scene/getClippingFunction', function() {
-    return Cesium['getClippingFunction'];
 });
 
 define('Scene/GetFeatureInfoFormat', function() {
@@ -2057,16 +2021,16 @@ define('Scene/LabelStyle', function() {
     return Cesium['LabelStyle'];
 });
 
+define('Scene/MapMode2D', function() {
+    return Cesium['MapMode2D'];
+});
+
 define('Scene/MapboxImageryProvider', function() {
     return Cesium['MapboxImageryProvider'];
 });
 
 define('Scene/MapboxStyleImageryProvider', function() {
     return Cesium['MapboxStyleImageryProvider'];
-});
-
-define('Scene/MapMode2D', function() {
-    return Cesium['MapMode2D'];
 });
 
 define('Scene/Material', function() {
@@ -2137,12 +2101,12 @@ define('Scene/NeverTileDiscardPolicy', function() {
     return Cesium['NeverTileDiscardPolicy'];
 });
 
-define('Scene/OctahedralProjectedCubeMap', function() {
-    return Cesium['OctahedralProjectedCubeMap'];
-});
-
 define('Scene/OIT', function() {
     return Cesium['OIT'];
+});
+
+define('Scene/OctahedralProjectedCubeMap', function() {
+    return Cesium['OctahedralProjectedCubeMap'];
 });
 
 define('Scene/OrderedGroundPrimitiveCollection', function() {
@@ -2165,12 +2129,12 @@ define('Scene/ParticleSystem', function() {
     return Cesium['ParticleSystem'];
 });
 
-define('Scene/PerformanceDisplay', function() {
-    return Cesium['PerformanceDisplay'];
-});
-
 define('Scene/PerInstanceColorAppearance', function() {
     return Cesium['PerInstanceColorAppearance'];
+});
+
+define('Scene/PerformanceDisplay', function() {
+    return Cesium['PerformanceDisplay'];
 });
 
 define('Scene/PickDepth', function() {
@@ -2265,14 +2229,6 @@ define('Scene/PrimitiveState', function() {
     return Cesium['PrimitiveState'];
 });
 
-define('Scene/processModelMaterialsCommon', function() {
-    return Cesium['processModelMaterialsCommon'];
-});
-
-define('Scene/processPbrMaterials', function() {
-    return Cesium['processPbrMaterials'];
-});
-
 define('Scene/QuadtreeOccluders', function() {
     return Cesium['QuadtreeOccluders'];
 });
@@ -2291,6 +2247,10 @@ define('Scene/QuadtreeTileLoadState', function() {
 
 define('Scene/QuadtreeTileProvider', function() {
     return Cesium['QuadtreeTileProvider'];
+});
+
+define('Scene/SDFSettings', function() {
+    return Cesium['SDFSettings'];
 });
 
 define('Scene/Scene', function() {
@@ -2315,10 +2275,6 @@ define('Scene/SceneTransitioner', function() {
 
 define('Scene/ScreenSpaceCameraController', function() {
     return Cesium['ScreenSpaceCameraController'];
-});
-
-define('Scene/SDFSettings', function() {
-    return Cesium['SDFSettings'];
 });
 
 define('Scene/ShadowMap', function() {
@@ -2425,12 +2381,12 @@ define('Scene/TileSelectionResult', function() {
     return Cesium['TileSelectionResult'];
 });
 
-define('Scene/Tileset3DTileContent', function() {
-    return Cesium['Tileset3DTileContent'];
-});
-
 define('Scene/TileState', function() {
     return Cesium['TileState'];
+});
+
+define('Scene/Tileset3DTileContent', function() {
+    return Cesium['Tileset3DTileContent'];
 });
 
 define('Scene/TimeDynamicImagery', function() {
@@ -2499,6 +2455,50 @@ define('Scene/WebMapServiceImageryProvider', function() {
 
 define('Scene/WebMapTileServiceImageryProvider', function() {
     return Cesium['WebMapTileServiceImageryProvider'];
+});
+
+define('Scene/computeFlyToLocationForRectangle', function() {
+    return Cesium['computeFlyToLocationForRectangle'];
+});
+
+define('Scene/createBillboardPointCallback', function() {
+    return Cesium['createBillboardPointCallback'];
+});
+
+define('Scene/createOpenStreetMapImageryProvider', function() {
+    return Cesium['createOpenStreetMapImageryProvider'];
+});
+
+define('Scene/createTangentSpaceDebugPrimitive', function() {
+    return Cesium['createTangentSpaceDebugPrimitive'];
+});
+
+define('Scene/createTileMapServiceImageryProvider', function() {
+    return Cesium['createTileMapServiceImageryProvider'];
+});
+
+define('Scene/createWorldImagery', function() {
+    return Cesium['createWorldImagery'];
+});
+
+define('Scene/getBinaryAccessor', function() {
+    return Cesium['getBinaryAccessor'];
+});
+
+define('Scene/getClipAndStyleCode', function() {
+    return Cesium['getClipAndStyleCode'];
+});
+
+define('Scene/getClippingFunction', function() {
+    return Cesium['getClippingFunction'];
+});
+
+define('Scene/processModelMaterialsCommon', function() {
+    return Cesium['processModelMaterialsCommon'];
+});
+
+define('Scene/processPbrMaterials', function() {
+    return Cesium['processPbrMaterials'];
 });
 
 define('Shaders/AdjustTranslucentFS', function() {
@@ -2665,6 +2665,22 @@ define('ThirdParty/Autolinker', function() {
     return Cesium['Autolinker'];
 });
 
+define('ThirdParty/LercDecode', function() {
+    return Cesium['LercDecode'];
+});
+
+define('ThirdParty/NoSleep', function() {
+    return Cesium['NoSleep'];
+});
+
+define('ThirdParty/Tween', function() {
+    return Cesium['Tween'];
+});
+
+define('ThirdParty/Uri', function() {
+    return Cesium['Uri'];
+});
+
 define('ThirdParty/bitmap-sdf', function() {
     return Cesium['bitmap-sdf'];
 });
@@ -2693,20 +2709,12 @@ define('ThirdParty/knockout', function() {
     return Cesium['knockout'];
 });
 
-define('ThirdParty/LercDecode', function() {
-    return Cesium['LercDecode'];
-});
-
 define('ThirdParty/measureText', function() {
     return Cesium['measureText'];
 });
 
 define('ThirdParty/mersenne-twister', function() {
     return Cesium['mersenne-twister'];
-});
-
-define('ThirdParty/NoSleep', function() {
-    return Cesium['NoSleep'];
 });
 
 define('ThirdParty/protobuf-minimal', function() {
@@ -2733,14 +2741,6 @@ define('ThirdParty/topojson', function() {
     return Cesium['topojson'];
 });
 
-define('ThirdParty/Tween', function() {
-    return Cesium['Tween'];
-});
-
-define('ThirdParty/Uri', function() {
-    return Cesium['Uri'];
-});
-
 define('ThirdParty/when', function() {
     return Cesium['when'];
 });
@@ -2757,20 +2757,8 @@ define('Widgets/Command', function() {
     return Cesium['Command'];
 });
 
-define('Widgets/createCommand', function() {
-    return Cesium['createCommand'];
-});
-
-define('Widgets/getElement', function() {
-    return Cesium['getElement'];
-});
-
 define('Widgets/InspectorShared', function() {
     return Cesium['InspectorShared'];
-});
-
-define('Widgets/subscribeAndEvaluate', function() {
-    return Cesium['subscribeAndEvaluate'];
 });
 
 define('Widgets/SvgPathBindingHandler', function() {
@@ -2779,6 +2767,18 @@ define('Widgets/SvgPathBindingHandler', function() {
 
 define('Widgets/ToggleButtonViewModel', function() {
     return Cesium['ToggleButtonViewModel'];
+});
+
+define('Widgets/createCommand', function() {
+    return Cesium['createCommand'];
+});
+
+define('Widgets/getElement', function() {
+    return Cesium['getElement'];
+});
+
+define('Widgets/subscribeAndEvaluate', function() {
+    return Cesium['subscribeAndEvaluate'];
 });
 
 define('Shaders/Appearances/AllMaterialAppearanceFS', function() {
@@ -2933,12 +2933,12 @@ define('Shaders/PostProcessStages/BloomComposite', function() {
     return Cesium['BloomComposite'];
 });
 
-define('Shaders/PostProcessStages/Brightness', function() {
-    return Cesium['Brightness'];
-});
-
 define('Shaders/PostProcessStages/BrightPass', function() {
     return Cesium['BrightPass'];
+});
+
+define('Shaders/PostProcessStages/Brightness', function() {
+    return Cesium['Brightness'];
 });
 
 define('Shaders/PostProcessStages/ContrastBias', function() {
@@ -2961,12 +2961,12 @@ define('Shaders/PostProcessStages/EdgeDetection', function() {
     return Cesium['EdgeDetection'];
 });
 
-define('Shaders/PostProcessStages/FilmicTonemapping', function() {
-    return Cesium['FilmicTonemapping'];
-});
-
 define('Shaders/PostProcessStages/FXAA', function() {
     return Cesium['FXAA'];
+});
+
+define('Shaders/PostProcessStages/FilmicTonemapping', function() {
+    return Cesium['FilmicTonemapping'];
 });
 
 define('Shaders/PostProcessStages/GaussianBlur1D', function() {
@@ -3005,6 +3005,10 @@ define('Shaders/PostProcessStages/Silhouette', function() {
     return Cesium['Silhouette'];
 });
 
+define('ThirdParty/GltfPipeline/ForEach', function() {
+    return Cesium['ForEach'];
+});
+
 define('ThirdParty/GltfPipeline/addBuffer', function() {
     return Cesium['addBuffer'];
 });
@@ -3031,10 +3035,6 @@ define('ThirdParty/GltfPipeline/addToArray', function() {
 
 define('ThirdParty/GltfPipeline/findAccessorMinMax', function() {
     return Cesium['findAccessorMinMax'];
-});
-
-define('ThirdParty/GltfPipeline/ForEach', function() {
-    return Cesium['ForEach'];
 });
 
 define('ThirdParty/GltfPipeline/getAccessorByteStride', function() {
@@ -3113,16 +3113,16 @@ define('Widgets/BaseLayerPicker/BaseLayerPickerViewModel', function() {
     return Cesium['BaseLayerPickerViewModel'];
 });
 
+define('Widgets/BaseLayerPicker/ProviderViewModel', function() {
+    return Cesium['ProviderViewModel'];
+});
+
 define('Widgets/BaseLayerPicker/createDefaultImageryProviderViewModels', function() {
     return Cesium['createDefaultImageryProviderViewModels'];
 });
 
 define('Widgets/BaseLayerPicker/createDefaultTerrainProviderViewModels', function() {
     return Cesium['createDefaultTerrainProviderViewModels'];
-});
-
-define('Widgets/BaseLayerPicker/ProviderViewModel', function() {
-    return Cesium['ProviderViewModel'];
 });
 
 define('Widgets/Cesium3DTilesInspector/Cesium3DTilesInspector', function() {
@@ -3229,6 +3229,14 @@ define('Widgets/Timeline/TimelineTrack', function() {
     return Cesium['TimelineTrack'];
 });
 
+define('Widgets/VRButton/VRButton', function() {
+    return Cesium['VRButton'];
+});
+
+define('Widgets/VRButton/VRButtonViewModel', function() {
+    return Cesium['VRButtonViewModel'];
+});
+
 define('Widgets/Viewer/Viewer', function() {
     return Cesium['Viewer'];
 });
@@ -3247,14 +3255,6 @@ define('Widgets/Viewer/viewerDragDropMixin', function() {
 
 define('Widgets/Viewer/viewerPerformanceWatchdogMixin', function() {
     return Cesium['viewerPerformanceWatchdogMixin'];
-});
-
-define('Widgets/VRButton/VRButton', function() {
-    return Cesium['VRButton'];
-});
-
-define('Widgets/VRButton/VRButtonViewModel', function() {
-    return Cesium['VRButtonViewModel'];
 });
 
 define('Shaders/Builtin/Constants/degreesPerRadian', function() {
@@ -3413,6 +3413,30 @@ define('Shaders/Builtin/Constants/webMercatorMaxLatitude', function() {
     return Cesium['webMercatorMaxLatitude'];
 });
 
+define('Shaders/Builtin/Functions/HSBToRGB', function() {
+    return Cesium['HSBToRGB'];
+});
+
+define('Shaders/Builtin/Functions/HSLToRGB', function() {
+    return Cesium['HSLToRGB'];
+});
+
+define('Shaders/Builtin/Functions/RGBToHSB', function() {
+    return Cesium['RGBToHSB'];
+});
+
+define('Shaders/Builtin/Functions/RGBToHSL', function() {
+    return Cesium['RGBToHSL'];
+});
+
+define('Shaders/Builtin/Functions/RGBToXYZ', function() {
+    return Cesium['RGBToXYZ'];
+});
+
+define('Shaders/Builtin/Functions/XYZToRGB', function() {
+    return Cesium['XYZToRGB'];
+});
+
 define('Shaders/Builtin/Functions/alphaWeight', function() {
     return Cesium['alphaWeight'];
 });
@@ -3521,14 +3545,6 @@ define('Shaders/Builtin/Functions/getWaterNoise', function() {
     return Cesium['getWaterNoise'];
 });
 
-define('Shaders/Builtin/Functions/HSBToRGB', function() {
-    return Cesium['HSBToRGB'];
-});
-
-define('Shaders/Builtin/Functions/HSLToRGB', function() {
-    return Cesium['HSLToRGB'];
-});
-
 define('Shaders/Builtin/Functions/hue', function() {
     return Cesium['hue'];
 });
@@ -3605,18 +3621,6 @@ define('Shaders/Builtin/Functions/reverseLogDepth', function() {
     return Cesium['reverseLogDepth'];
 });
 
-define('Shaders/Builtin/Functions/RGBToHSB', function() {
-    return Cesium['RGBToHSB'];
-});
-
-define('Shaders/Builtin/Functions/RGBToHSL', function() {
-    return Cesium['RGBToHSL'];
-});
-
-define('Shaders/Builtin/Functions/RGBToXYZ', function() {
-    return Cesium['RGBToXYZ'];
-});
-
 define('Shaders/Builtin/Functions/sampleOctahedralProjection', function() {
     return Cesium['sampleOctahedralProjection'];
 });
@@ -3683,10 +3687,6 @@ define('Shaders/Builtin/Functions/writeDepthClampedToFarPlane', function() {
 
 define('Shaders/Builtin/Functions/writeLogDepth', function() {
     return Cesium['writeLogDepth'];
-});
-
-define('Shaders/Builtin/Functions/XYZToRGB', function() {
-    return Cesium['XYZToRGB'];
 });
 
 define('Shaders/Builtin/Structs/depthRangeStruct', function() {

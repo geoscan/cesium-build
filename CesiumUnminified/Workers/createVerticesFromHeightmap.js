@@ -27777,27 +27777,33 @@ define('Core/HeightmapTessellator',[
                 maximumHeight = Math.max(maximumHeight, heightSample);
                 minimumHeight = Math.min(minimumHeight, heightSample);
 
+                var local_latitude = latitude;
+                var local_longitude = longitude;
                 if (colIndex !== col || rowIndex !== row) {
                     var percentage = 0.00001;
-                    if (colIndex < 0) {
-                        longitude -= percentage * rectangleWidth;
-                    } else {
-                        longitude += percentage * rectangleWidth;
+                    if (colIndex !== col) {
+                        if (colIndex < 0) {
+                            local_longitude -= percentage * rectangleWidth;
+                        } else {
+                            local_longitude += percentage * rectangleWidth;
+                        }
                     }
-                    if (rowIndex < 0) {
-                        latitude += percentage * rectangleHeight;
-                    } else {
-                        latitude -= percentage * rectangleHeight;
+                    if (rowIndex !== row) {
+                        if (rowIndex < 0) {
+                            local_latitude += percentage * rectangleHeight;
+                        } else {
+                            local_latitude -= percentage * rectangleHeight;
+                        }
                     }
 
-                    cosLatitude = cos(latitude);
-                    nZ = sin(latitude);
+                    cosLatitude = cos(local_latitude);
+                    nZ = sin(local_latitude);
                     kZ = radiiSquaredZ * nZ;
                     heightSample -= skirtHeight;
                 }
 
-                var nX = cosLatitude * cos(longitude);
-                var nY = cosLatitude * sin(longitude);
+                var nX = cosLatitude * cos(local_longitude);
+                var nY = cosLatitude * sin(local_longitude);
 
                 var kX = radiiSquaredX * nX;
                 var kY = radiiSquaredY * nY;
